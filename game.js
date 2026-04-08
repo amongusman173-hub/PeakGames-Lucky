@@ -2869,7 +2869,12 @@ function useLoadedDice() {
 
     const chance = 100 - target;
     const multiplier = 98 / chance;
-    const roll = target + 0.01; // Guaranteed win
+    // Add 20% more chance to the base chance (capped at 95% max)
+    const baseChance = chance / 100;
+    const boostedChance = Math.min(0.95, baseChance * 1.20);
+    const roll = Math.random() < boostedChance
+        ? target + (Math.random() * (99 - target))  // winning roll
+        : Math.random() * target;                    // losing roll
 
     const indicator = document.getElementById('dice-roll-indicator');
     const numberDisplay = document.getElementById('dice-number');
@@ -2886,7 +2891,7 @@ function useLoadedDice() {
     numberDisplay.style.textShadow = '0 0 20px #00e701, 0 0 40px #00e701';
     addWinEffect(diceDisplay);
     createParticles('+$' + winAmount.toFixed(2), '#00e701');
-    showToast(`🎲 Loaded Dice! Won $${winAmount.toFixed(2)}! (${multiplier.toFixed(2)}x)`, 'success');
+    showToast(`🎲 Loaded Dice! Won $${winAmount.toFixed(2)}! (${multiplier.toFixed(2)}x) [+20% chance]`, 'success');
 
     if (winAmount >= 100) {
         createConfetti();
