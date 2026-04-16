@@ -9625,7 +9625,6 @@ function closeAdminPanel() {
 
 function adminWriteBroadcast(data) {
     const apiUrl = 'https://api.github.com/repos/' + ADMIN_REPO + '/contents/broadcast.json';
-    // First get current SHA
     return fetch(apiUrl, {
         headers: { 'Authorization': 'token ' + ADMIN_TOKEN }
     })
@@ -9644,6 +9643,11 @@ function adminWriteBroadcast(data) {
                 sha: file.sha
             })
         });
+    })
+    .then(r => {
+        // Purge jsDelivr cache so clients get fresh data immediately
+        fetch('https://purge.jsdelivr.net/gh/amongusman173-hub/PeakGames-Lucky@main/broadcast.json').catch(()=>{});
+        return r;
     });
 }
 
@@ -9694,30 +9698,26 @@ function adminSetBalance() {
     showToast('Balance set to $' + val.toFixed(2), 'success');
 }
 
-// Poll broadcast.json every 6 seconds via GitHub API (no caching)
+// Poll broadcast.json every 6 seconds
 (function pollBroadcast() {
     let lastSeen = 0;
-    const API_URL = 'https://api.github.com/repos/' + ADMIN_REPO + '/contents/broadcast.json';
     function poll() {
-        // Use GitHub API directly — bypasses raw.githubusercontent.com cache
-        fetch(API_URL, {
-            headers: {
-                'Accept': 'application/vnd.github.v3.raw',
-                'Cache-Control': 'no-cache'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data || !data.ts || data.ts <= lastSeen) return;
-            lastSeen = data.ts;
-            const isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
-            if (data.refresh) {
-                if (!isAdmin) location.reload();
-            } else if (data.msg) {
-                if (!isAdmin) showToast('\uD83D\uDCE2 ' + data.msg, data.type || 'info');
-            }
-        })
-        .catch(() => {});
+        // jsDelivr with timestamp to bust cache
+        var url = 'https://cdn.jsdelivr.net/gh/amongusman173-hub/PeakGames-Lucky@main/broadcast.json?t=' + Date.now();
+        fetch(url, { cache: 'no-store' })
+            .then(function(r) { return r.text(); })
+            .then(function(text) {
+                var data = JSON.parse(text);
+                if (!data || !data.ts || data.ts <= lastSeen) return;
+                lastSeen = data.ts;
+                var isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
+                if (data.refresh) {
+                    if (!isAdmin) location.reload();
+                } else if (data.msg) {
+                    if (!isAdmin) showToast('📢 ' + data.msg, data.type || 'info');
+                }
+            })
+            .catch(function(e) { console.log('poll error:', e); });
     }
     setTimeout(poll, 2000);
     setInterval(poll, 6000);
