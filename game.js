@@ -9596,7 +9596,7 @@ function openAdminPasswordPrompt() {
 
 function checkAdminPassword() {
     const input = document.getElementById('admin-password-input');
-    if (input.value === 'rah') {
+    if (input.value === 'mango') {
         document.getElementById('admin-password-modal').style.display = 'none';
         input.value = '';
         document.getElementById('admin-panel-modal').style.display = 'block';
