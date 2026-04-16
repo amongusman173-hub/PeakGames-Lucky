@@ -9647,6 +9647,14 @@ function adminGiveMoney() {
     setTimeout(function(){ adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }); }, 15000);
 }
 
+function adminSetBalanceAll() {
+    var val = parseFloat(document.getElementById('admin-setbalance-all-val').value);
+    if (isNaN(val) || val < 0) { showToast('Enter a valid amount', 'error'); return; }
+    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, setBalance: val });
+    showToast('Balance set to $' + val.toLocaleString() + ' for everyone!', 'success');
+    setTimeout(function(){ adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }); }, 15000);
+}
+
 function adminSetBalance() {
     const val = parseFloat(document.getElementById('admin-balance-val').value);
     if (isNaN(val) || val < 0) { showToast('Invalid balance', 'error'); return; }
@@ -9846,7 +9854,12 @@ function showPollResults(poll, myChoice) {
 
 // Poll every 5 seconds for all users
 (function pollBroadcast(){
-    var lastSeen = Date.now();
+    var lastSeen = 0;
+    // On first load, fetch current ts and store it so we ignore old broadcasts
+    fetch(MANTLE_URL).then(function(r){ return r.json(); }).then(function(data){
+        if (data && data.ts) lastSeen = data.ts;
+    }).catch(function(){});
+
     function poll(){
         fetch(MANTLE_URL).then(function(r){ return r.json(); }).then(function(data){
             if (!data || !data.ts || data.ts <= lastSeen) return;
@@ -9855,10 +9868,11 @@ function showPollResults(poll, myChoice) {
             if (data.refresh) { if (!isAdmin) location.reload(); }
             else if (data.poll) { if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){ if(p.active) showPollToUser(p); }).catch(function(){}); }
             else if (data.effect) { if (!isAdmin) runEffect(data.effect, data.extra); }
+            else if (data.setBalance !== undefined && data.setBalance !== null) { balance = data.setBalance; updateBalance(); showAdminToast('Your balance has been set to $' + data.setBalance.toLocaleString(), 'info'); }
             else if (data.giveMoney) { balance += data.giveMoney; updateBalance(); showAdminToast('You received $' + data.giveMoney.toLocaleString() + ' from the admin!', 'success'); createConfetti(); }
             else if (data.msg) { if (!isAdmin) showAdminToast(data.msg, data.type || 'info'); }
         }).catch(function(){});
     }
-    setTimeout(poll, 2000);
+    setTimeout(poll, 3000);
     setInterval(poll, 5000);
 })();
