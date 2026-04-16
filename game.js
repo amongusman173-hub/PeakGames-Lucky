@@ -9648,25 +9648,33 @@ function adminSetBalance() {
 }
 
 function adminEffect(type) {
-    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, effect: type });
+    var extra = null;
+    if (type === 'bigwin') {
+        extra = document.getElementById('admin-bigwin-amount').value.trim() || '$10,000';
+        if (!extra.startsWith('$')) extra = '$' + extra;
+    }
+    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, effect: type, extra: extra });
     showToast('Effect sent!', 'success');
     setTimeout(() => adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }), 15000);
 }
 
-function runEffect(type) {
+function runEffect(type, extra) {
     if (type === 'confetti') {
         for (var i = 0; i < 5; i++) (function(i){ setTimeout(function(){ createConfetti(); }, i * 400); })(i);
     } else if (type === 'flip') {
         document.body.style.transition = 'transform 0.5s';
         document.body.style.transform = 'rotate(180deg)';
-        setTimeout(function(){ document.body.style.transform = 'rotate(0deg)'; }, 4000);
+        setTimeout(function(){
+            document.body.style.transition = 'transform 0.5s';
+            document.body.style.transform = 'rotate(0deg)';
+        }, 4000);
     } else if (type === 'shake') {
         document.body.style.animation = 'adminShake 0.1s infinite';
         setTimeout(function(){ document.body.style.animation = ''; }, 2000);
     } else if (type === 'snow') {
         var container = document.createElement('div');
         container.id = 'admin-snow';
-        container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;overflow:hidden;';
+        container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;overflow:hidden;transition:opacity 1.5s;';
         document.body.appendChild(container);
         for (var j = 0; j < 60; j++) {
             var flake = document.createElement('div');
@@ -9674,11 +9682,11 @@ function runEffect(type) {
             flake.style.cssText = 'position:absolute;font-size:' + (10+Math.random()*16) + 'px;left:' + (Math.random()*100) + '%;top:-30px;animation:adminFall ' + (3+Math.random()*4) + 's linear ' + (Math.random()*3) + 's forwards;';
             container.appendChild(flake);
         }
-        setTimeout(function(){ var el = document.getElementById('admin-snow'); if(el) el.remove(); }, 10000);
+        setTimeout(function(){ var el = document.getElementById('admin-snow'); if(el){ el.style.opacity='0'; setTimeout(function(){ el.remove(); }, 1500); } }, 8500);
     } else if (type === 'matrix') {
         var overlay = document.createElement('canvas');
         overlay.id = 'admin-matrix';
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9997;pointer-events:none;opacity:0.18;';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9997;pointer-events:none;opacity:0.18;transition:opacity 1.5s;';
         overlay.width = window.innerWidth; overlay.height = window.innerHeight;
         document.body.appendChild(overlay);
         var ctx = overlay.getContext('2d');
@@ -9694,18 +9702,24 @@ function runEffect(type) {
                 drops[c]++;
             }
         }, 50);
-        setTimeout(function(){ clearInterval(matrixInterval); var el = document.getElementById('admin-matrix'); if(el) el.remove(); }, 8000);
-    } else if (type === 'party') {
-        document.body.style.animation = 'adminParty 0.3s infinite';
-        for (var p = 0; p < 8; p++) (function(p){ setTimeout(function(){ createConfetti(); }, p*300); })(p);
-        setTimeout(function(){ document.body.style.animation = ''; }, 6000);
+        setTimeout(function(){
+            var el = document.getElementById('admin-matrix');
+            if(el) el.style.opacity = '0';
+            setTimeout(function(){ clearInterval(matrixInterval); var el2 = document.getElementById('admin-matrix'); if(el2) el2.remove(); }, 1500);
+        }, 6500);
     } else if (type === 'bigwin') {
-        showAdminToast('JACKPOT! Someone just won $999,999!', 'success');
+        var amount = extra || '$10,000';
+        showAdminToast('YOU just won ' + amount + '! Congrats!', 'success');
         createConfetti();
+        createParticles('+' + amount, '#ffc800');
     } else if (type === 'cursed') {
+        document.body.style.transition = 'filter 0.5s';
         document.body.style.filter = 'hue-rotate(180deg) invert(0.1)';
         showAdminToast('Something feels... off.', 'error');
-        setTimeout(function(){ document.body.style.filter = ''; }, 8000);
+        setTimeout(function(){
+            document.body.style.transition = 'filter 1.5s';
+            document.body.style.filter = '';
+        }, 6500);
     }
 }
 
@@ -9832,7 +9846,7 @@ function showPollResults(poll, myChoice) {
             var isAdmin = document.getElementById('admin-panel-modal').style.display !== 'none';
             if (data.refresh) { if (!isAdmin) location.reload(); }
             else if (data.poll) { if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){ if(p.active) showPollToUser(p); }).catch(function(){}); }
-            else if (data.effect) { if (!isAdmin) runEffect(data.effect); }
+            else if (data.effect) { if (!isAdmin) runEffect(data.effect, data.extra); }
             else if (data.msg) { if (!isAdmin) showAdminToast(data.msg, data.type || 'info'); }
         }).catch(function(){});
     }
