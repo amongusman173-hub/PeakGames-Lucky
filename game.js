@@ -9863,7 +9863,6 @@ function showPollResults(poll, myChoice) {
 // Poll every 5 seconds for all users
 (function pollBroadcast(){
     var lastSeen = 0;
-    // On first load, fetch current ts and store it so we ignore old broadcasts
     fetch(MANTLE_URL).then(function(r){ return r.json(); }).then(function(data){
         if (data && data.ts) lastSeen = data.ts;
     }).catch(function(){});
@@ -9873,20 +9872,29 @@ function showPollResults(poll, myChoice) {
             if (!data || !data.ts || data.ts <= lastSeen) return;
             lastSeen = data.ts;
             var isAdmin = document.getElementById('admin-panel-modal').style.display !== 'none';
-            if (data.refresh) { if (!isAdmin) location.reload(); }
-            else if (data.poll) { if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){ 
-                if(p.active) {
-                    var modal = document.getElementById('poll-modal');
-                    // Show if new poll or modal was dismissed
-                    if (modal.dataset.pollId !== p.id || modal.style.display === 'none') {
-                        showPollToUser(p);
+            if (data.refresh) {
+                if (!isAdmin) location.reload();
+            } else if (data.poll) {
+                if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){
+                    if (p.active) {
+                        var modal = document.getElementById('poll-modal');
+                        if (modal.dataset.pollId !== p.id || modal.style.display === 'none') showPollToUser(p);
                     }
-                }
-            }).catch(function(){}); }
-            else if (data.effect) { if (!isAdmin) runEffect(data.effect, data.extra); }
-            else if (data.setBalance !== undefined && data.setBalance !== null) { balance = data.setBalance; updateBalance(); showAdminToast('Your balance has been set to $' + data.setBalance.toLocaleString(), 'info'); }
-            else if (data.giveMoney) { balance += data.giveMoney; updateBalance(); showAdminToast('You received $' + data.giveMoney.toLocaleString() + ' from the admin!', 'success'); createConfetti(); }
-            else if (data.msg) { if (!isAdmin) showAdminToast(data.msg, data.type || 'info'); }
+                }).catch(function(){});
+            } else if (data.effect) {
+                if (!isAdmin) runEffect(data.effect, data.extra);
+            } else if (data.setBalance !== undefined && data.setBalance !== null) {
+                balance = data.setBalance;
+                updateBalance();
+                showAdminToast('Your balance has been set to $' + Number(data.setBalance).toLocaleString(), 'info');
+            } else if (data.giveMoney) {
+                balance += data.giveMoney;
+                updateBalance();
+                showAdminToast('You received $' + Number(data.giveMoney).toLocaleString() + ' from the admin!', 'success');
+                createConfetti();
+            } else if (data.msg) {
+                if (!isAdmin) showAdminToast(data.msg, data.type || 'info');
+            }
         }).catch(function(){});
     }
     setTimeout(poll, 3000);
