@@ -9577,7 +9577,7 @@ function startHorseRace() {
 // users across every device worldwide.
 // ============================================================
 const ADMIN_REPO = 'amongusman173-hub/PeakGames-Lucky';
-const ADMIN_TOKEN = atob(['Z2hwX2FGOHpFeFpUODEy','bnhGaTNFdUdpQklpZjdz','Vzl5NDNIUGRzTQ=='].join(''));
+const ADMIN_TOKEN = atob(['Z2hwX0czbnI0VkxhVnd6','b3pQRFQ5QWk5VEFZdlFS','UGdFOTI1MUdHNQ=='].join(''));
 const BROADCAST_RAW = 'https://raw.githubusercontent.com/' + ADMIN_REPO + '/main/broadcast.json';
 
 (function() {
