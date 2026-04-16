@@ -9639,6 +9639,14 @@ function adminRefreshAll() {
         }).catch(() => showToast('Network error', 'error'));
 }
 
+function adminGiveMoney() {
+    var val = parseFloat(document.getElementById('admin-givemoney-val').value);
+    if (isNaN(val) || val <= 0) { showToast('Enter a valid amount', 'error'); return; }
+    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, giveMoney: val });
+    showToast('$' + val.toLocaleString() + ' sent to everyone!', 'success');
+    setTimeout(function(){ adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }); }, 15000);
+}
+
 function adminSetBalance() {
     const val = parseFloat(document.getElementById('admin-balance-val').value);
     if (isNaN(val) || val < 0) { showToast('Invalid balance', 'error'); return; }
@@ -9847,6 +9855,7 @@ function showPollResults(poll, myChoice) {
             if (data.refresh) { if (!isAdmin) location.reload(); }
             else if (data.poll) { if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){ if(p.active) showPollToUser(p); }).catch(function(){}); }
             else if (data.effect) { if (!isAdmin) runEffect(data.effect, data.extra); }
+            else if (data.giveMoney) { balance += data.giveMoney; updateBalance(); showAdminToast('You received $' + data.giveMoney.toLocaleString() + ' from the admin!', 'success'); createConfetti(); }
             else if (data.msg) { if (!isAdmin) showAdminToast(data.msg, data.type || 'info'); }
         }).catch(function(){});
     }
