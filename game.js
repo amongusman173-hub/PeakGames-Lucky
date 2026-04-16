@@ -9654,6 +9654,8 @@ function showAdminToast(message, type) {
 function closeAdminPanel() {
     document.getElementById('admin-panel-modal').style.display = 'none';
 }
+
+function adminWriteBroadcast(data) {
     return fetch(MANTLE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
