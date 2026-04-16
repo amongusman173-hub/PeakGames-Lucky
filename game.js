@@ -9814,9 +9814,17 @@ function showPollToUser(poll) {
     document.getElementById('poll-question').textContent = poll.question;
     var optDiv = document.getElementById('poll-options');
     var resultsDiv = document.getElementById('poll-voted-results');
-    optDiv.innerHTML = ''; resultsDiv.style.display = 'none'; resultsDiv.innerHTML = '';
+    optDiv.innerHTML = ''; 
+    resultsDiv.style.display = 'none'; 
+    resultsDiv.innerHTML = '';
+    // Store current poll id on the modal so dismiss knows which poll this is
+    modal.dataset.pollId = poll.id;
     var voted = localStorage.getItem('voted-poll-' + poll.id);
-    if (voted !== null) { showPollResults(poll, parseInt(voted)); modal.style.display = 'block'; return; }
+    if (voted !== null) { 
+        showPollResults(poll, parseInt(voted)); 
+        modal.style.display = 'block'; 
+        return; 
+    }
     poll.options.forEach(function(opt, i){
         var btn = document.createElement('button');
         btn.textContent = opt;
@@ -9866,7 +9874,15 @@ function showPollResults(poll, myChoice) {
             lastSeen = data.ts;
             var isAdmin = document.getElementById('admin-panel-modal').style.display !== 'none';
             if (data.refresh) { if (!isAdmin) location.reload(); }
-            else if (data.poll) { if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){ if(p.active) showPollToUser(p); }).catch(function(){}); }
+            else if (data.poll) { if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){ 
+                if(p.active) {
+                    var modal = document.getElementById('poll-modal');
+                    // Show if new poll or modal was dismissed
+                    if (modal.dataset.pollId !== p.id || modal.style.display === 'none') {
+                        showPollToUser(p);
+                    }
+                }
+            }).catch(function(){}); }
             else if (data.effect) { if (!isAdmin) runEffect(data.effect, data.extra); }
             else if (data.setBalance !== undefined && data.setBalance !== null) { balance = data.setBalance; updateBalance(); showAdminToast('Your balance has been set to $' + data.setBalance.toLocaleString(), 'info'); }
             else if (data.giveMoney) { balance += data.giveMoney; updateBalance(); showAdminToast('You received $' + data.giveMoney.toLocaleString() + ' from the admin!', 'success'); createConfetti(); }
