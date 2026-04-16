@@ -6815,3 +6815,31 @@ input:disabled {
     margin-top: 14px;
     color: #b1bad3;
 }
+
+/* Admin broadcast notification */
+.toast-admin {
+    border-left: 6px solid #ffc800;
+    background: linear-gradient(135deg, #1a2c38 0%, #3d3520 100%);
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    padding: 20px 28px;
+    max-width: 420px;
+    box-shadow: 0 8px 32px rgba(255, 200, 0, 0.3), 0 4px 12px rgba(0,0,0,0.5);
+    border-radius: 12px;
+}
+
+.toast-admin .admin-toast-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffc800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.toast-admin .admin-toast-msg {
+    font-size: 16px;
+    color: #fff;
+    line-height: 1.4;
+}

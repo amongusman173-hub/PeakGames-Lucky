@@ -9617,11 +9617,41 @@ function checkAdminPassword() {
     }
 }
 
+function showAdminToast(message, type) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-admin show';
+
+    const label = document.createElement('div');
+    label.className = 'admin-toast-label';
+    label.textContent = '📢 Admin Announcement';
+
+    const msg = document.createElement('div');
+    msg.className = 'admin-toast-msg';
+    msg.textContent = message;
+
+    toast.appendChild(label);
+    toast.appendChild(msg);
+    toast.style.cursor = 'pointer';
+    toast.addEventListener('click', () => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Last 10 seconds instead of 3
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 10000);
+}
+
 function closeAdminPanel() {
     document.getElementById('admin-panel-modal').style.display = 'none';
 }
-
-function adminWriteBroadcast(data) {
     return fetch(MANTLE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -9684,7 +9714,7 @@ function adminSetBalance() {
                 if (data.refresh) {
                     if (!isAdmin) location.reload();
                 } else if (data.msg) {
-                    if (!isAdmin) showToast('📢 ' + data.msg, data.type || 'info');
+                    if (!isAdmin) showAdminToast(data.msg, data.type || 'info');
                 }
             })
             .catch(function() {});
