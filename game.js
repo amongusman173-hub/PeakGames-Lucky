@@ -9577,6 +9577,8 @@ function startHorseRace() {
 // global broadcast to all users on any device.
 // ============================================================
 const MANTLE_URL = 'https://mantledb.sh/v2/peakgames-lucky/broadcast';
+const MANTLE_POLL_URL = 'https://mantledb.sh/v2/peakgames-lucky/poll';
+const MANTLE_VOTES_URL = 'https://mantledb.sh/v2/peakgames-lucky/votes';
 
 (function() {
     const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','Enter'];
@@ -9817,8 +9819,6 @@ function adminMatrix() {
 // ============================================================
 // ADMIN POLLS
 // ============================================================
-const MANTLE_POLL_URL = 'https://mantledb.sh/v2/peakgames-lucky/poll';
-const MANTLE_VOTES_URL = 'https://mantledb.sh/v2/peakgames-lucky/votes';
 let currentPollId = null;
 let pollResultsInterval = null;
 
