@@ -9658,9 +9658,15 @@ function adminSendNotification() {
                 document.getElementById('admin-notif-text').value = '';
                 showToast('Notification sent to all users!', 'success');
             } else {
-                showToast('Failed to send', 'error');
+                return r.json().then(err => {
+                    console.error('API Error:', err);
+                    showToast('Failed: ' + (err.message || 'Unknown error'), 'error');
+                });
             }
-        }).catch(() => showToast('Network error', 'error'));
+        }).catch(e => {
+            console.error('Network error:', e);
+            showToast('Network error: ' + e.message, 'error');
+        });
 }
 
 function adminRefreshAll() {
@@ -9668,8 +9674,16 @@ function adminRefreshAll() {
     adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: true })
         .then(r => {
             if (r.ok) showToast('All users will refresh shortly!', 'success');
-            else showToast('Failed to send', 'error');
-        }).catch(() => showToast('Network error', 'error'));
+            else {
+                return r.json().then(err => {
+                    console.error('API Error:', err);
+                    showToast('Failed: ' + (err.message || 'Unknown error'), 'error');
+                });
+            }
+        }).catch(e => {
+            console.error('Network error:', e);
+            showToast('Network error: ' + e.message, 'error');
+        });
 }
 
 function adminSetBalance() {
