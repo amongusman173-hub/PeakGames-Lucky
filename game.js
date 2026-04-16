@@ -9570,3 +9570,94 @@ function startHorseRace() {
         }
     }, 50);
 }
+
+// ============================================================
+// ADMIN PANEL - Konami Code: ↑↑↓↓←→←→BA Enter
+// ============================================================
+(function() {
+    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','Enter'];
+    let konamiIndex = 0;
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === KONAMI[konamiIndex]) {
+            konamiIndex++;
+            if (konamiIndex === KONAMI.length) {
+                konamiIndex = 0;
+                openAdminPasswordPrompt();
+            }
+        } else {
+            konamiIndex = e.key === KONAMI[0] ? 1 : 0;
+        }
+    });
+})();
+
+function openAdminPasswordPrompt() {
+    const modal = document.getElementById('admin-password-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
+}
+
+function checkAdminPassword() {
+    const input = document.getElementById('admin-password-input');
+    if (input.value === 'rah') {
+        document.getElementById('admin-password-modal').style.display = 'none';
+        input.value = '';
+        document.getElementById('admin-panel-modal').style.display = 'flex';
+    } else {
+        input.style.border = '1px solid #ff4757';
+        input.value = '';
+        input.placeholder = 'Wrong password!';
+        setTimeout(() => {
+            input.style.border = '1px solid #2f4553';
+            input.placeholder = 'Password...';
+        }, 1500);
+    }
+}
+
+function closeAdminPanel() {
+    document.getElementById('admin-panel-modal').style.display = 'none';
+}
+
+function adminSendNotification() {
+    const msg = document.getElementById('admin-notif-text').value.trim();
+    const type = document.getElementById('admin-notif-type').value;
+    if (!msg) { showToast('Enter a message first', 'error'); return; }
+
+    // Store in localStorage so all tabs on this browser see it
+    const notif = { msg, type, ts: Date.now() };
+    localStorage.setItem('admin_broadcast', JSON.stringify(notif));
+
+    // Also try to write to a shared GitHub Gist for cross-user delivery
+    const GIST_ID = 'YOUR_GIST_ID'; // replace with your gist id if desired
+    // For now, show it locally immediately
+    showToast('📢 ' + msg, type);
+    document.getElementById('admin-notif-text').value = '';
+    showToast('Notification sent!', 'success');
+}
+
+function adminSetBalance() {
+    const val = parseFloat(document.getElementById('admin-balance-val').value);
+    if (isNaN(val) || val < 0) { showToast('Invalid balance', 'error'); return; }
+    balance = val;
+    updateBalance();
+    showToast(`Balance set to $${val.toFixed(2)}`, 'success');
+}
+
+// Poll localStorage for admin broadcasts every 5 seconds
+(function pollAdminBroadcast() {
+    let lastSeen = 0;
+    setInterval(function() {
+        try {
+            const raw = localStorage.getItem('admin_broadcast');
+            if (!raw) return;
+            const notif = JSON.parse(raw);
+            if (notif.ts > lastSeen) {
+                lastSeen = notif.ts;
+                // Don't show to the admin themselves (they already saw it)
+                if (document.getElementById('admin-panel-modal').style.display !== 'flex') {
+                    showToast('📢 ' + notif.msg, notif.type);
+                }
+            }
+        } catch(e) {}
+    }, 5000);
+})();

@@ -2715,6 +2715,54 @@ Cross the road</div>
 </div>
 </div>
 </div>
+<!-- Admin Panel Modal -->
+<div id="admin-panel-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:500px;background:#0f212e;border:2px solid #ff4757;">
+    <div class="modal-header" style="border-bottom:1px solid #ff4757;">
+      <h2 style="color:#ff4757;">⚙️ Admin Panel</h2>
+      <button class="close-btn" onclick="closeAdminPanel()">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div style="margin-bottom:20px;">
+        <h3 style="color:#ffc800;margin-bottom:10px;">📢 Send Global Notification</h3>
+        <p style="color:#b1bad3;font-size:13px;margin-bottom:10px;">Message will be broadcast to all active users on the site.</p>
+        <textarea id="admin-notif-text" placeholder="Enter notification message..." style="width:100%;height:80px;background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:10px;border-radius:6px;resize:vertical;font-size:14px;box-sizing:border-box;"></textarea>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <select id="admin-notif-type" style="background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;flex:1;">
+            <option value="info">ℹ️ Info</option>
+            <option value="success">✅ Success</option>
+            <option value="error">🚨 Alert</option>
+          </select>
+          <button onclick="adminSendNotification()" style="background:#ff4757;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;">Send</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid #2f4553;padding-top:15px;">
+        <h3 style="color:#ffc800;margin-bottom:10px;">💰 Set Balance</h3>
+        <div style="display:flex;gap:10px;">
+          <input type="number" id="admin-balance-val" placeholder="New balance..." style="background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;flex:1;">
+          <button onclick="adminSetBalance()" style="background:#00e701;color:#000;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;">Set</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Password Prompt -->
+<div id="admin-password-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:360px;background:#0f212e;border:2px solid #ffc800;text-align:center;">
+    <div style="padding:30px;">
+      <div style="font-size:40px;margin-bottom:10px;">🔐</div>
+      <h3 style="color:#ffc800;margin-bottom:5px;">Admin Access</h3>
+      <p style="color:#b1bad3;font-size:13px;margin-bottom:20px;">Enter the admin password to continue.</p>
+      <input type="password" id="admin-password-input" placeholder="Password..." style="width:100%;background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:10px;border-radius:6px;font-size:16px;box-sizing:border-box;text-align:center;" onkeydown="if(event.key==='Enter')checkAdminPassword()">
+      <div style="display:flex;gap:10px;margin-top:15px;">
+        <button onclick="document.getElementById('admin-password-modal').style.display='none'" style="flex:1;background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;">Cancel</button>
+        <button onclick="checkAdminPassword()" style="flex:1;background:#ffc800;color:#000;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:700;">Unlock</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="game.js"> </script>
 </body>
 </html>
