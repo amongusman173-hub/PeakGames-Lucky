@@ -9573,12 +9573,12 @@ function startHorseRace() {
 
 // ============================================================
 // ADMIN PANEL - Konami Code: ↑↑↓↓←→←→BA Enter
-// GitHub Gist used as global data store — works across ALL
-// devices and computers worldwide.
+// Uses GitHub Contents API (CORS-enabled) to broadcast to ALL
+// users across every device worldwide.
 // ============================================================
-const ADMIN_GIST_ID = '46b75e201d32df58a40ed3c43c624710';
-const ADMIN_GIST_RAW = 'https://gist.githubusercontent.com/amongusman173-hub/' + ADMIN_GIST_ID + '/raw/broadcast.json';
+const ADMIN_REPO = 'amongusman173-hub/PeakGames-Lucky';
 const ADMIN_TOKEN = atob('Z2hwX3gwa3ZqaVh3SWZJVVllcGVDakV4MnJXZTl5NGxQaDFzc0UxSg==');
+const BROADCAST_RAW = 'https://raw.githubusercontent.com/' + ADMIN_REPO + '/main/broadcast.json';
 
 (function() {
     const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','Enter'];
@@ -9623,16 +9623,27 @@ function closeAdminPanel() {
     document.getElementById('admin-panel-modal').style.display = 'none';
 }
 
-function adminWriteGist(data) {
-    return fetch('https://api.github.com/gists/' + ADMIN_GIST_ID, {
-        method: 'PATCH',
-        headers: {
-            'Authorization': 'token ' + ADMIN_TOKEN,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            files: { 'broadcast.json': { content: JSON.stringify(data) } }
-        })
+function adminWriteBroadcast(data) {
+    const apiUrl = 'https://api.github.com/repos/' + ADMIN_REPO + '/contents/broadcast.json';
+    // First get current SHA
+    return fetch(apiUrl, {
+        headers: { 'Authorization': 'token ' + ADMIN_TOKEN }
+    })
+    .then(r => r.json())
+    .then(file => {
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        return fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + ADMIN_TOKEN,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: 'admin broadcast',
+                content: encoded,
+                sha: file.sha
+            })
+        });
     });
 }
 
@@ -9641,7 +9652,7 @@ function adminSendNotification() {
     const type = document.getElementById('admin-notif-type').value;
     if (!msg) { showToast('Enter a message first', 'error'); return; }
     showToast('Sending...', 'info');
-    adminWriteGist({ msg, type, ts: Date.now(), refresh: false })
+    adminWriteBroadcast({ msg, type, ts: Date.now(), refresh: false })
         .then(r => {
             if (r.ok) {
                 document.getElementById('admin-notif-text').value = '';
@@ -9654,7 +9665,7 @@ function adminSendNotification() {
 
 function adminRefreshAll() {
     showToast('Sending refresh to all users...', 'info');
-    adminWriteGist({ msg: '', type: 'info', ts: Date.now(), refresh: true })
+    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: true })
         .then(r => {
             if (r.ok) showToast('All users will refresh shortly!', 'success');
             else showToast('Failed to send', 'error');
@@ -9669,11 +9680,11 @@ function adminSetBalance() {
     showToast('Balance set to $' + val.toFixed(2), 'success');
 }
 
-// Poll the Gist every 6 seconds — works for ALL users globally
-(function pollGistBroadcast() {
+// Poll broadcast.json every 8 seconds — works for ALL users globally
+(function pollBroadcast() {
     let lastSeen = 0;
     function poll() {
-        fetch(ADMIN_GIST_RAW + '?t=' + Date.now())
+        fetch(BROADCAST_RAW + '?t=' + Date.now())
             .then(r => r.json())
             .then(data => {
                 if (!data || !data.ts || data.ts <= lastSeen) return;
@@ -9688,5 +9699,5 @@ function adminSetBalance() {
             .catch(() => {});
     }
     setTimeout(poll, 3000);
-    setInterval(poll, 6000);
+    setInterval(poll, 8000);
 })();
