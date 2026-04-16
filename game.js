@@ -9694,24 +9694,31 @@ function adminSetBalance() {
     showToast('Balance set to $' + val.toFixed(2), 'success');
 }
 
-// Poll broadcast.json every 8 seconds — works for ALL users globally
+// Poll broadcast.json every 6 seconds via GitHub API (no caching)
 (function pollBroadcast() {
     let lastSeen = 0;
+    const API_URL = 'https://api.github.com/repos/' + ADMIN_REPO + '/contents/broadcast.json';
     function poll() {
-        fetch(BROADCAST_RAW + '?t=' + Date.now())
-            .then(r => r.json())
-            .then(data => {
-                if (!data || !data.ts || data.ts <= lastSeen) return;
-                lastSeen = data.ts;
-                const isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
-                if (data.refresh) {
-                    if (!isAdmin) location.reload();
-                } else if (data.msg) {
-                    if (!isAdmin) showToast('📢 ' + data.msg, data.type || 'info');
-                }
-            })
-            .catch(() => {});
+        // Use GitHub API directly — bypasses raw.githubusercontent.com cache
+        fetch(API_URL, {
+            headers: {
+                'Accept': 'application/vnd.github.v3.raw',
+                'Cache-Control': 'no-cache'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !data.ts || data.ts <= lastSeen) return;
+            lastSeen = data.ts;
+            const isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
+            if (data.refresh) {
+                if (!isAdmin) location.reload();
+            } else if (data.msg) {
+                if (!isAdmin) showToast('\uD83D\uDCE2 ' + data.msg, data.type || 'info');
+            }
+        })
+        .catch(() => {});
     }
-    setTimeout(poll, 3000);
-    setInterval(poll, 8000);
+    setTimeout(poll, 2000);
+    setInterval(poll, 6000);
 })();
