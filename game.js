@@ -8334,6 +8334,7 @@ function getRandomCard() {
 // ===== VIDEO POKER GAME =====
 let pokerHand = [];
 let heldCards = [];
+let pokerLockedBet = 0;
 
 function dealVideoPoker() {
     const betAmount = parseFloat(document.getElementById('videopoker-bet').value);
@@ -8343,9 +8344,13 @@ function dealVideoPoker() {
         return;
     }
 
+    pokerLockedBet = betAmount;
     balance -= betAmount;
     trackBet('videopoker', betAmount);
     updateBalance();
+
+    // Lock the bet input so it can't be changed mid-hand
+    document.getElementById('videopoker-bet').disabled = true;
 
     // Deal 5 cards
     pokerHand = [];
@@ -8363,7 +8368,7 @@ function dealVideoPoker() {
 }
 
 function drawVideoPoker() {
-    const betAmount = parseFloat(document.getElementById('videopoker-bet').value);
+    const betAmount = pokerLockedBet;
 
     // Replace non-held cards
     for (let i = 0; i < 5; i++) {
@@ -8375,6 +8380,7 @@ function drawVideoPoker() {
     displayPokerHand();
     document.getElementById('videopoker-draw-btn').style.display = 'none';
     document.getElementById('videopoker-deal-btn').style.display = 'block';
+    document.getElementById('videopoker-bet').disabled = false;
 
     playSound('blackjackCardFlip');
 
