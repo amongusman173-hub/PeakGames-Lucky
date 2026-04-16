@@ -9639,6 +9639,10 @@ function adminSendNotification() {
             if (r.ok) {
                 document.getElementById('admin-notif-text').value = '';
                 showToast('Notification sent to all users!', 'success');
+                // Reset after 30s so new visitors don't see stale notification
+                setTimeout(() => {
+                    adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false });
+                }, 30000);
             } else {
                 r.text().then(t => showToast('Failed: ' + t, 'error'));
             }
@@ -9649,8 +9653,13 @@ function adminRefreshAll() {
     showToast('Sending refresh to all users...', 'info');
     adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: true })
         .then(r => {
-            if (r.ok) showToast('All users will refresh shortly!', 'success');
-            else r.text().then(t => showToast('Failed: ' + t, 'error'));
+            if (r.ok) {
+                showToast('All users will refresh shortly!', 'success');
+                // Reset after 10 seconds so new visitors don't get caught in a loop
+                setTimeout(() => {
+                    adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false });
+                }, 10000);
+            } else r.text().then(t => showToast('Failed: ' + t, 'error'));
         }).catch(e => showToast('Network error: ' + e.message, 'error'));
 }
 
