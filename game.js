@@ -9713,6 +9713,10 @@ function adminSetBalance() {
                 var isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
                 if (data.refresh) {
                     if (!isAdmin) location.reload();
+                } else if (data.poll) {
+                    if (!isAdmin) fetch(MANTLE_POLL_URL).then(r=>r.json()).then(poll=>{ if(poll.active) showPollToUser(poll); }).catch(()=>{});
+                } else if (data.effect) {
+                    if (!isAdmin) runEffect(data.effect);
                 } else if (data.msg) {
                     if (!isAdmin) showAdminToast(data.msg, data.type || 'info');
                 }
@@ -9722,3 +9726,225 @@ function adminSetBalance() {
     setTimeout(poll, 2000);
     setInterval(poll, 5000);
 })();
+
+// ============================================================
+// ADMIN EFFECTS
+// ============================================================
+function adminEffect(type) {
+    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, effect: type });
+    showToast('Effect sent!', 'success');
+    setTimeout(() => adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }), 15000);
+}
+
+function runEffect(type) {
+    if (type === 'confetti') {
+        for (let i = 0; i < 5; i++) setTimeout(() => createConfetti(), i * 400);
+    } else if (type === 'flip') {
+        document.body.style.transition = 'transform 0.5s';
+        document.body.style.transform = 'rotate(180deg)';
+        setTimeout(() => { document.body.style.transform = 'rotate(0deg)'; }, 4000);
+    } else if (type === 'shake') {
+        document.body.style.animation = 'adminShake 0.1s infinite';
+        setTimeout(() => { document.body.style.animation = ''; }, 2000);
+    } else if (type === 'snow') {
+        adminSnow();
+    } else if (type === 'matrix') {
+        adminMatrix();
+    } else if (type === 'party') {
+        document.body.style.animation = 'adminParty 0.3s infinite';
+        for (let i = 0; i < 8; i++) setTimeout(() => createConfetti(), i * 300);
+        setTimeout(() => { document.body.style.animation = ''; }, 6000);
+    } else if (type === 'bigwin') {
+        showAdminToast('💰 JACKPOT! Someone just won $999,999!', 'success');
+        createConfetti();
+        createParticles('+$999,999', '#ffc800');
+    } else if (type === 'cursed') {
+        document.body.style.filter = 'hue-rotate(180deg) invert(0.1)';
+        showAdminToast('👻 Something feels... off.', 'error');
+        setTimeout(() => { document.body.style.filter = ''; }, 8000);
+    }
+}
+
+function adminSnow() {
+    const container = document.createElement('div');
+    container.id = 'admin-snow';
+    container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;overflow:hidden;';
+    document.body.appendChild(container);
+    for (let i = 0; i < 60; i++) {
+        const flake = document.createElement('div');
+        flake.textContent = '❄️';
+        flake.style.cssText = `position:absolute;font-size:${10+Math.random()*16}px;left:${Math.random()*100}%;top:-30px;opacity:${0.5+Math.random()*0.5};animation:adminFall ${3+Math.random()*4}s linear ${Math.random()*3}s forwards;`;
+        container.appendChild(flake);
+    }
+    setTimeout(() => { const el = document.getElementById('admin-snow'); if(el) el.remove(); }, 10000);
+}
+
+function adminMatrix() {
+    const overlay = document.createElement('canvas');
+    overlay.id = 'admin-matrix';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9997;pointer-events:none;opacity:0.18;';
+    overlay.width = window.innerWidth;
+    overlay.height = window.innerHeight;
+    document.body.appendChild(overlay);
+    const ctx = overlay.getContext('2d');
+    const cols = Math.floor(overlay.width / 16);
+    const drops = Array(cols).fill(1);
+    const interval = setInterval(() => {
+        ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx.fillRect(0, 0, overlay.width, overlay.height);
+        ctx.fillStyle = '#00e701';
+        ctx.font = '14px monospace';
+        drops.forEach((y, i) => {
+            ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), i * 16, y * 16);
+            if (y * 16 > overlay.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        });
+    }, 50);
+    setTimeout(() => { clearInterval(interval); const el = document.getElementById('admin-matrix'); if(el) el.remove(); }, 8000);
+}
+
+// CSS keyframes injected once
+(function injectAdminStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes adminShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+        @keyframes adminParty { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+        @keyframes adminFall { to{transform:translateY(110vh) rotate(360deg);opacity:0;} }
+    `;
+    document.head.appendChild(style);
+})();
+
+// ============================================================
+// ADMIN POLLS
+// ============================================================
+const MANTLE_POLL_URL = 'https://mantledb.sh/v2/peakgames-lucky/poll';
+const MANTLE_VOTES_URL = 'https://mantledb.sh/v2/peakgames-lucky/votes';
+let currentPollId = null;
+let pollResultsInterval = null;
+
+function adminSendPoll() {
+    const q = document.getElementById('admin-poll-question').value.trim();
+    const a = document.getElementById('admin-poll-a').value.trim();
+    const b = document.getElementById('admin-poll-b').value.trim();
+    const c = document.getElementById('admin-poll-c').value.trim();
+    const d = document.getElementById('admin-poll-d').value.trim();
+    if (!q || !a || !b) { showToast('Need question + at least 2 options', 'error'); return; }
+
+    const options = [a, b];
+    if (c) options.push(c);
+    if (d) options.push(d);
+    const pollId = Date.now().toString();
+    currentPollId = pollId;
+
+    const pollData = { id: pollId, question: q, options, active: true };
+    const votesData = {};
+    options.forEach((_, i) => votesData[i] = 0);
+
+    Promise.all([
+        fetch(MANTLE_POLL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(pollData) }),
+        fetch(MANTLE_VOTES_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(votesData) })
+    ]).then(() => {
+        showToast('Poll launched!', 'success');
+        adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, poll: true });
+        startAdminPollResults();
+    }).catch(e => showToast('Error: ' + e.message, 'error'));
+}
+
+function adminClosePoll() {
+    fetch(MANTLE_POLL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ active: false }) });
+    adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false });
+    if (pollResultsInterval) clearInterval(pollResultsInterval);
+    document.getElementById('admin-poll-results').style.display = 'none';
+    showToast('Poll closed', 'info');
+}
+
+function startAdminPollResults() {
+    const resultsDiv = document.getElementById('admin-poll-results');
+    resultsDiv.style.display = 'block';
+    if (pollResultsInterval) clearInterval(pollResultsInterval);
+    pollResultsInterval = setInterval(fetchAdminPollResults, 3000);
+    fetchAdminPollResults();
+}
+
+function fetchAdminPollResults() {
+    fetch(MANTLE_VOTES_URL).then(r => r.json()).then(votes => {
+        const total = Object.values(votes).reduce((a, b) => a + b, 0);
+        document.getElementById('admin-poll-total').textContent = '(' + total + ' votes)';
+        fetch(MANTLE_POLL_URL).then(r => r.json()).then(poll => {
+            const bars = document.getElementById('admin-poll-bars');
+            bars.innerHTML = '';
+            poll.options && poll.options.forEach((opt, i) => {
+                const count = votes[i] || 0;
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                bars.innerHTML += `<div style="margin-bottom:8px;">
+                    <div style="display:flex;justify-content:space-between;color:#b1bad3;font-size:12px;margin-bottom:3px;">
+                        <span>${opt}</span><span>${count} (${pct}%)</span>
+                    </div>
+                    <div style="background:#0f212e;border-radius:4px;height:8px;">
+                        <div style="background:#a855f7;height:8px;border-radius:4px;width:${pct}%;transition:width 0.4s;"></div>
+                    </div>
+                </div>`;
+            });
+        });
+    }).catch(() => {});
+}
+
+// Show poll to regular users
+function showPollToUser(poll) {
+    const modal = document.getElementById('poll-modal');
+    document.getElementById('poll-question').textContent = poll.question;
+    const optDiv = document.getElementById('poll-options');
+    const resultsDiv = document.getElementById('poll-voted-results');
+    optDiv.innerHTML = '';
+    resultsDiv.style.display = 'none';
+    resultsDiv.innerHTML = '';
+
+    const voted = localStorage.getItem('voted-poll-' + poll.id);
+    if (voted) {
+        showPollResults(poll, parseInt(voted));
+        return;
+    }
+
+    poll.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.style.cssText = 'background:#1a2c3a;border:2px solid #a855f7;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px;text-align:left;transition:background 0.2s;';
+        btn.onmouseover = () => btn.style.background = '#2a3c4a';
+        btn.onmouseout = () => btn.style.background = '#1a2c3a';
+        btn.onclick = () => submitVote(poll, i);
+        optDiv.appendChild(btn);
+    });
+    modal.style.display = 'block';
+}
+
+function submitVote(poll, choiceIndex) {
+    localStorage.setItem('voted-poll-' + poll.id, choiceIndex);
+    fetch(MANTLE_VOTES_URL).then(r => r.json()).then(votes => {
+        votes[choiceIndex] = (votes[choiceIndex] || 0) + 1;
+        fetch(MANTLE_VOTES_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(votes) });
+        showPollResults(poll, choiceIndex);
+    });
+}
+
+function showPollResults(poll, myChoice) {
+    document.getElementById('poll-options').innerHTML = '';
+    fetch(MANTLE_VOTES_URL).then(r => r.json()).then(votes => {
+        const total = Object.values(votes).reduce((a, b) => a + b, 0);
+        const resultsDiv = document.getElementById('poll-voted-results');
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = '<div style="color:#a855f7;font-size:12px;margin-bottom:8px;">✅ Voted! Results:</div>';
+        poll.options.forEach((opt, i) => {
+            const count = votes[i] || 0;
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            const isMe = i === myChoice;
+            resultsDiv.innerHTML += `<div style="margin-bottom:6px;">
+                <div style="display:flex;justify-content:space-between;color:${isMe?'#ffc800':'#b1bad3'};font-size:12px;margin-bottom:2px;">
+                    <span>${isMe?'✓ ':''} ${opt}</span><span>${pct}%</span>
+                </div>
+                <div style="background:#0f212e;border-radius:4px;height:6px;">
+                    <div style="background:${isMe?'#ffc800':'#a855f7'};height:6px;border-radius:4px;width:${pct}%;"></div>
+                </div>
+            </div>`;
+        });
+    });
+}

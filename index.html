@@ -29,7 +29,7 @@ Limbo</button>
 <span class="icon">📈</span>
 Crash</button>
 <button class="nav-item" onclick="showGame('roulette')">
-<span class="icon">🎡</span>
+<span cl6y  u7`6TR5DE4SWQA   ass="icon">🎡</span>
 Roulette</button>
 <button class="nav-item" onclick="showGame('coinflip')">
 <span class="icon">🪙</span>
@@ -2717,18 +2717,19 @@ Cross the road</div>
 </div>
 <!-- Admin Panel Modal -->
 <div id="admin-panel-modal" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width:500px;background:#0f212e;border:2px solid #ff4757;">
-    <div class="modal-header" style="border-bottom:1px solid #ff4757;">
+  <div class="modal-content" style="max-width:560px;background:#0f212e;border:2px solid #ff4757;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header" style="border-bottom:1px solid #ff4757;position:sticky;top:0;background:#0f212e;z-index:1;">
       <h2 style="color:#ff4757;">⚙️ Admin Panel</h2>
       <button class="close-btn" onclick="closeAdminPanel()">✕</button>
     </div>
-    <div style="padding:20px;">
-      <div style="margin-bottom:20px;">
-        <h3 style="color:#ffc800;margin-bottom:10px;">📢 Send Global Notification</h3>
-        <p style="color:#b1bad3;font-size:13px;margin-bottom:10px;">Message will be broadcast to all active users on the site.</p>
-        <textarea id="admin-notif-text" placeholder="Enter notification message..." style="width:100%;height:80px;background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:10px;border-radius:6px;resize:vertical;font-size:14px;box-sizing:border-box;"></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <select id="admin-notif-type" style="background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;flex:1;">
+    <div style="padding:20px;display:flex;flex-direction:column;gap:18px;">
+
+      <!-- Notification -->
+      <div style="background:#1a2c3a;border-radius:10px;padding:15px;">
+        <h3 style="color:#ffc800;margin-bottom:10px;">📢 Send Notification</h3>
+        <textarea id="admin-notif-text" placeholder="Message to all users..." style="width:100%;height:70px;background:#0f212e;border:1px solid #2f4553;color:#fff;padding:10px;border-radius:6px;resize:none;font-size:14px;box-sizing:border-box;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <select id="admin-notif-type" style="background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;flex:1;">
             <option value="info">ℹ️ Info</option>
             <option value="success">✅ Success</option>
             <option value="error">🚨 Alert</option>
@@ -2736,18 +2737,57 @@ Cross the road</div>
           <button onclick="adminSendNotification()" style="background:#ff4757;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;">Send</button>
         </div>
       </div>
-      <div style="border-top:1px solid #2f4553;padding-top:15px;">
-        <h3 style="color:#ffc800;margin-bottom:10px;">💰 Set Balance</h3>
-        <div style="display:flex;gap:10px;">
-          <input type="number" id="admin-balance-val" placeholder="New balance..." style="background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;flex:1;">
+
+      <!-- Funny Effects -->
+      <div style="background:#1a2c3a;border-radius:10px;padding:15px;">
+        <h3 style="color:#ffc800;margin-bottom:10px;">🎭 Funny Effects</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button onclick="adminEffect('confetti')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">🎉 Confetti Rain</button>
+          <button onclick="adminEffect('flip')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">🙃 Flip Screen</button>
+          <button onclick="adminEffect('shake')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">📳 Shake Screen</button>
+          <button onclick="adminEffect('snow')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">❄️ Make it Snow</button>
+          <button onclick="adminEffect('matrix')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">💻 Matrix Mode</button>
+          <button onclick="adminEffect('party')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">🥳 Party Mode</button>
+          <button onclick="adminEffect('bigwin')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">💰 Fake Big Win</button>
+          <button onclick="adminEffect('cursed')" style="background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;">👻 Cursed Mode</button>
+        </div>
+      </div>
+
+      <!-- Poll -->
+      <div style="background:#1a2c3a;border-radius:10px;padding:15px;">
+        <h3 style="color:#ffc800;margin-bottom:10px;">📊 Create Poll</h3>
+        <input id="admin-poll-question" placeholder="Poll question..." style="width:100%;background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+          <input id="admin-poll-a" placeholder="Option A..." style="background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;font-size:13px;">
+          <input id="admin-poll-b" placeholder="Option B..." style="background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;font-size:13px;">
+          <input id="admin-poll-c" placeholder="Option C (optional)..." style="background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;font-size:13px;">
+          <input id="admin-poll-d" placeholder="Option D (optional)..." style="background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;font-size:13px;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="adminSendPoll()" style="flex:1;background:#a855f7;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:700;">Launch Poll</button>
+          <button onclick="adminClosePoll()" style="flex:1;background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;">Close Poll</button>
+        </div>
+        <!-- Live Results -->
+        <div id="admin-poll-results" style="margin-top:12px;display:none;">
+          <div style="color:#ffc800;font-size:13px;font-weight:600;margin-bottom:8px;">📊 Live Results <span id="admin-poll-total" style="color:#b1bad3;">(0 votes)</span></div>
+          <div id="admin-poll-bars"></div>
+        </div>
+      </div>
+
+      <!-- Balance & Refresh -->
+      <div style="background:#1a2c3a;border-radius:10px;padding:15px;">
+        <h3 style="color:#ffc800;margin-bottom:10px;">💰 Set My Balance</h3>
+        <div style="display:flex;gap:8px;">
+          <input type="number" id="admin-balance-val" placeholder="New balance..." style="background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;flex:1;">
           <button onclick="adminSetBalance()" style="background:#00e701;color:#000;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;">Set</button>
         </div>
       </div>
-      <div style="border-top:1px solid #2f4553;padding-top:15px;margin-top:15px;">
+
+      <div style="background:#1a2c3a;border-radius:10px;padding:15px;">
         <h3 style="color:#ff4757;margin-bottom:10px;">🔄 Refresh All Users</h3>
-        <p style="color:#b1bad3;font-size:13px;margin-bottom:10px;">Force reload the page for all active users globally.</p>
         <button onclick="adminRefreshAll()" style="width:100%;background:#ff4757;color:#fff;border:none;padding:12px;border-radius:6px;cursor:pointer;font-weight:700;">Refresh Everyone</button>
       </div>
+
     </div>
   </div>
 </div>
@@ -2766,6 +2806,15 @@ Cross the road</div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Poll Modal (shown to all users) -->
+<div id="poll-modal" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#0f212e;border:2px solid #a855f7;border-radius:14px;padding:20px;min-width:320px;max-width:420px;box-shadow:0 8px 40px rgba(168,85,247,0.4);">
+  <div style="color:#a855f7;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📊 Live Poll</div>
+  <div id="poll-question" style="color:#fff;font-size:16px;font-weight:700;margin-bottom:14px;"></div>
+  <div id="poll-options" style="display:flex;flex-direction:column;gap:8px;"></div>
+  <div id="poll-voted-results" style="display:none;margin-top:12px;"></div>
+  <button onclick="document.getElementById('poll-modal').style.display='none'" style="margin-top:12px;background:transparent;border:none;color:#556b7c;font-size:12px;cursor:pointer;width:100%;">Dismiss</button>
 </div>
 
 <script src="game.js"> </script>
