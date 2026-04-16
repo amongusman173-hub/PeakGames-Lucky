@@ -9573,12 +9573,10 @@ function startHorseRace() {
 
 // ============================================================
 // ADMIN PANEL - Konami Code: ↑↑↓↓←→←→BA Enter
-// Uses GitHub Contents API (CORS-enabled) to broadcast to ALL
-// users across every device worldwide.
+// Uses MantleDB (free, no-auth, CORS-enabled) for instant
+// global broadcast to all users on any device.
 // ============================================================
-const ADMIN_REPO = 'amongusman173-hub/PeakGames-Lucky';
-const ADMIN_TOKEN = atob(['Z2hwX0czbnI0VkxhVnd6','b3pQRFQ5QWk5VEFZdlFS','UGdFOTI1MUdHNQ=='].join(''));
-const BROADCAST_RAW = 'https://raw.githubusercontent.com/' + ADMIN_REPO + '/main/broadcast.json';
+const MANTLE_URL = 'https://mantledb.sh/v2/peakgames-lucky/broadcast';
 
 (function() {
     const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','Enter'];
@@ -9624,30 +9622,10 @@ function closeAdminPanel() {
 }
 
 function adminWriteBroadcast(data) {
-    const apiUrl = 'https://api.github.com/repos/' + ADMIN_REPO + '/contents/broadcast.json';
-    return fetch(apiUrl, {
-        headers: { 'Authorization': 'token ' + ADMIN_TOKEN }
-    })
-    .then(r => r.json())
-    .then(file => {
-        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        return fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'token ' + ADMIN_TOKEN,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: 'admin broadcast',
-                content: encoded,
-                sha: file.sha
-            })
-        });
-    })
-    .then(r => {
-        // Purge jsDelivr cache so clients get fresh data immediately
-        fetch('https://purge.jsdelivr.net/gh/amongusman173-hub/PeakGames-Lucky@main/broadcast.json').catch(()=>{});
-        return r;
+    return fetch(MANTLE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
     });
 }
 
@@ -9662,15 +9640,9 @@ function adminSendNotification() {
                 document.getElementById('admin-notif-text').value = '';
                 showToast('Notification sent to all users!', 'success');
             } else {
-                return r.json().then(err => {
-                    console.error('API Error:', err);
-                    showToast('Failed: ' + (err.message || 'Unknown error'), 'error');
-                });
+                r.text().then(t => showToast('Failed: ' + t, 'error'));
             }
-        }).catch(e => {
-            console.error('Network error:', e);
-            showToast('Network error: ' + e.message, 'error');
-        });
+        }).catch(e => showToast('Network error: ' + e.message, 'error'));
 }
 
 function adminRefreshAll() {
@@ -9678,16 +9650,8 @@ function adminRefreshAll() {
     adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: true })
         .then(r => {
             if (r.ok) showToast('All users will refresh shortly!', 'success');
-            else {
-                return r.json().then(err => {
-                    console.error('API Error:', err);
-                    showToast('Failed: ' + (err.message || 'Unknown error'), 'error');
-                });
-            }
-        }).catch(e => {
-            console.error('Network error:', e);
-            showToast('Network error: ' + e.message, 'error');
-        });
+            else r.text().then(t => showToast('Failed: ' + t, 'error'));
+        }).catch(e => showToast('Network error: ' + e.message, 'error'));
 }
 
 function adminSetBalance() {
@@ -9698,16 +9662,13 @@ function adminSetBalance() {
     showToast('Balance set to $' + val.toFixed(2), 'success');
 }
 
-// Poll broadcast.json every 6 seconds
+// Poll MantleDB every 5 seconds — instant, no caching, works globally
 (function pollBroadcast() {
     let lastSeen = 0;
     function poll() {
-        // jsDelivr with timestamp to bust cache
-        var url = 'https://cdn.jsdelivr.net/gh/amongusman173-hub/PeakGames-Lucky@main/broadcast.json?t=' + Date.now();
-        fetch(url, { cache: 'no-store' })
-            .then(function(r) { return r.text(); })
-            .then(function(text) {
-                var data = JSON.parse(text);
+        fetch(MANTLE_URL)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
                 if (!data || !data.ts || data.ts <= lastSeen) return;
                 lastSeen = data.ts;
                 var isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
@@ -9717,8 +9678,8 @@ function adminSetBalance() {
                     if (!isAdmin) showToast('📢 ' + data.msg, data.type || 'info');
                 }
             })
-            .catch(function(e) { console.log('poll error:', e); });
+            .catch(function() {});
     }
     setTimeout(poll, 2000);
-    setInterval(poll, 6000);
+    setInterval(poll, 5000);
 })();
