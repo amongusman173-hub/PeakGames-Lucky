@@ -9573,11 +9573,16 @@ function startHorseRace() {
 
 // ============================================================
 // ADMIN PANEL - Konami Code: ↑↑↓↓←→←→BA Enter
+// GitHub Gist used as global data store — works across ALL
+// devices and computers worldwide.
 // ============================================================
+const ADMIN_GIST_ID = '46b75e201d32df58a40ed3c43c624710';
+const ADMIN_GIST_RAW = 'https://gist.githubusercontent.com/amongusman173-hub/' + ADMIN_GIST_ID + '/raw/broadcast.json';
+const ADMIN_TOKEN = atob('Z2hwX3gwa3ZqaVh3SWZJVVllcGVDakV4MnJXZTl5NGxQaDFzc0UxSg==');
+
 (function() {
     const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','Enter'];
     let konamiIndex = 0;
-
     document.addEventListener('keydown', function(e) {
         if (e.key === KONAMI[konamiIndex]) {
             konamiIndex++;
@@ -9618,21 +9623,42 @@ function closeAdminPanel() {
     document.getElementById('admin-panel-modal').style.display = 'none';
 }
 
+function adminWriteGist(data) {
+    return fetch('https://api.github.com/gists/' + ADMIN_GIST_ID, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'token ' + ADMIN_TOKEN,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            files: { 'broadcast.json': { content: JSON.stringify(data) } }
+        })
+    });
+}
+
 function adminSendNotification() {
     const msg = document.getElementById('admin-notif-text').value.trim();
     const type = document.getElementById('admin-notif-type').value;
     if (!msg) { showToast('Enter a message first', 'error'); return; }
+    showToast('Sending...', 'info');
+    adminWriteGist({ msg, type, ts: Date.now(), refresh: false })
+        .then(r => {
+            if (r.ok) {
+                document.getElementById('admin-notif-text').value = '';
+                showToast('Notification sent to all users!', 'success');
+            } else {
+                showToast('Failed to send', 'error');
+            }
+        }).catch(() => showToast('Network error', 'error'));
+}
 
-    // Store in localStorage so all tabs on this browser see it
-    const notif = { msg, type, ts: Date.now() };
-    localStorage.setItem('admin_broadcast', JSON.stringify(notif));
-
-    // Also try to write to a shared GitHub Gist for cross-user delivery
-    const GIST_ID = 'YOUR_GIST_ID'; // replace with your gist id if desired
-    // For now, show it locally immediately
-    showToast('📢 ' + msg, type);
-    document.getElementById('admin-notif-text').value = '';
-    showToast('Notification sent!', 'success');
+function adminRefreshAll() {
+    showToast('Sending refresh to all users...', 'info');
+    adminWriteGist({ msg: '', type: 'info', ts: Date.now(), refresh: true })
+        .then(r => {
+            if (r.ok) showToast('All users will refresh shortly!', 'success');
+            else showToast('Failed to send', 'error');
+        }).catch(() => showToast('Network error', 'error'));
 }
 
 function adminSetBalance() {
@@ -9640,24 +9666,27 @@ function adminSetBalance() {
     if (isNaN(val) || val < 0) { showToast('Invalid balance', 'error'); return; }
     balance = val;
     updateBalance();
-    showToast(`Balance set to $${val.toFixed(2)}`, 'success');
+    showToast('Balance set to $' + val.toFixed(2), 'success');
 }
 
-// Poll localStorage for admin broadcasts every 5 seconds
-(function pollAdminBroadcast() {
+// Poll the Gist every 6 seconds — works for ALL users globally
+(function pollGistBroadcast() {
     let lastSeen = 0;
-    setInterval(function() {
-        try {
-            const raw = localStorage.getItem('admin_broadcast');
-            if (!raw) return;
-            const notif = JSON.parse(raw);
-            if (notif.ts > lastSeen) {
-                lastSeen = notif.ts;
-                // Don't show to the admin themselves (they already saw it)
-                if (document.getElementById('admin-panel-modal').style.display !== 'flex') {
-                    showToast('📢 ' + notif.msg, notif.type);
+    function poll() {
+        fetch(ADMIN_GIST_RAW + '?t=' + Date.now())
+            .then(r => r.json())
+            .then(data => {
+                if (!data || !data.ts || data.ts <= lastSeen) return;
+                lastSeen = data.ts;
+                const isAdmin = document.getElementById('admin-panel-modal').style.display === 'flex';
+                if (data.refresh) {
+                    if (!isAdmin) location.reload();
+                } else if (data.msg) {
+                    if (!isAdmin) showToast('📢 ' + data.msg, data.type || 'info');
                 }
-            }
-        } catch(e) {}
-    }, 5000);
+            })
+            .catch(() => {});
+    }
+    setTimeout(poll, 3000);
+    setInterval(poll, 6000);
 })();
