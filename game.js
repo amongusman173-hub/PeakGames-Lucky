@@ -9824,7 +9824,7 @@ function showPollResults(poll, myChoice) {
 
 // Poll every 5 seconds for all users
 (function pollBroadcast(){
-    var lastSeen = 0;
+    var lastSeen = Date.now();
     function poll(){
         fetch(MANTLE_URL).then(function(r){ return r.json(); }).then(function(data){
             if (!data || !data.ts || data.ts <= lastSeen) return;
