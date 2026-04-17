@@ -995,9 +995,9 @@ let plinkoCanvas, plinkoCtx;
 let plinkoActive = false;
 let plinkoAnimationFrame = null;
 const plinkoMultipliers = {
-    low: [1.3, 1.2, 1.1, 1, 0.9, 1, 1.1, 1.2, 1.3],
-    medium: [2.2, 1.8, 1.4, 1.1, 0.7, 1.1, 1.4, 1.8, 2.2],
-    high: [2.8, 2.2, 1.5, 0.9, 0.4, 0.9, 1.5, 2.2, 2.8]
+    low: [1.1, 1.0, 0.9, 0.8, 0.5, 0.8, 0.9, 1.0, 1.1],
+    medium: [1.5, 1.2, 1.0, 0.7, 0.3, 0.7, 1.0, 1.2, 1.5],
+    high: [1.8, 1.3, 0.9, 0.5, 0.2, 0.5, 0.9, 1.3, 1.8]
 };
 
 function initPlinko() {
