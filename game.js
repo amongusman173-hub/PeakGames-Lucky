@@ -6398,10 +6398,11 @@ function throwDart() {
     hitText.textContent = '';
     hitText.className = 'dart-hit-text';
     
-    // Get random position on dartboard
+    // Get random position - biased toward outer rings (harder to hit center)
     const angle = Math.random() * 360;
-    const maxDistance = 225; // Radius of dartboard
-    const distance = Math.random() * maxDistance;
+    const maxDistance = 225;
+    // Use squared random to bias toward outer rings
+    const distance = Math.pow(Math.random(), 0.55) * maxDistance;
     
     const x = 225 + distance * Math.cos(angle * Math.PI / 180);
     const y = 225 + distance * Math.sin(angle * Math.PI / 180);
@@ -6497,57 +6498,57 @@ function createDartWave(x, y) {
 
 function getDartMultiplier(difficulty, distance, maxDistance) {
     const distanceRatio = distance / maxDistance;
-    
-    // Bullseye (center) - highest multipliers, smaller zone
+
+    // Bullseye - much smaller zone, lower multipliers
     if (distanceRatio < 0.05) {
         const bullseyeMultipliers = {
-            easy: [5, 8, 10, 15],
-            medium: [10, 15, 25, 40],
-            hard: [20, 35, 60, 100],
-            expert: [50, 80, 120, 200]
+            easy: [2, 3, 4, 5],
+            medium: [4, 6, 8, 12],
+            hard: [8, 12, 18, 25],
+            expert: [15, 25, 35, 50]
         };
         return bullseyeMultipliers[difficulty][Math.floor(Math.random() * bullseyeMultipliers[difficulty].length)];
     }
-    
+
     // Inner ring
     if (distanceRatio < 0.18) {
         const innerMultipliers = {
-            easy: [1.5, 2, 2.5, 3],
-            medium: [3, 5, 8, 12],
-            hard: [6, 10, 15, 25],
-            expert: [12, 20, 35, 60]
+            easy: [0.8, 1, 1.2, 1.5],
+            medium: [1, 1.5, 2, 3],
+            hard: [2, 3, 4, 6],
+            expert: [3, 5, 8, 12]
         };
         return innerMultipliers[difficulty][Math.floor(Math.random() * innerMultipliers[difficulty].length)];
     }
-    
+
     // Mid ring
     if (distanceRatio < 0.45) {
         const midMultipliers = {
-            easy: [0.5, 0.8, 1, 1.2],
-            medium: [1, 1.5, 2, 3],
-            hard: [2, 4, 6, 10],
-            expert: [4, 8, 15, 25]
+            easy: [0.2, 0.3, 0.5, 0.7],
+            medium: [0.3, 0.5, 0.8, 1],
+            hard: [0.5, 1, 1.5, 2],
+            expert: [1, 2, 3, 5]
         };
         return midMultipliers[difficulty][Math.floor(Math.random() * midMultipliers[difficulty].length)];
     }
-    
+
     // Outer mid ring
     if (distanceRatio < 0.75) {
         const outerMidMultipliers = {
-            easy: [0.2, 0.3, 0.5, 0.8],
-            medium: [0.3, 0.5, 0.8, 1],
-            hard: [0.3, 0.5, 1, 2],
-            expert: [0.5, 1, 3, 8]
+            easy: [0, 0.1, 0.2, 0.3],
+            medium: [0, 0.1, 0.2, 0.4],
+            hard: [0, 0.1, 0.3, 0.5],
+            expert: [0, 0.2, 0.5, 1]
         };
         return outerMidMultipliers[difficulty][Math.floor(Math.random() * outerMidMultipliers[difficulty].length)];
     }
-    
+
     // Outer ring - mostly losses
     const outerMultipliers = {
-        easy: [0.1, 0.2, 0.3, 0.5],
-        medium: [0, 0.1, 0.2, 0.4],
-        hard: [0, 0, 0.1, 0.3],
-        expert: [0, 0, 0, 0.2]
+        easy: [0, 0, 0.1, 0.2],
+        medium: [0, 0, 0, 0.1],
+        hard: [0, 0, 0, 0],
+        expert: [0, 0, 0, 0]
     };
     return outerMultipliers[difficulty][Math.floor(Math.random() * outerMultipliers[difficulty].length)];
 }
