@@ -6398,11 +6398,10 @@ function throwDart() {
     hitText.textContent = '';
     hitText.className = 'dart-hit-text';
     
-    // Get random position - biased toward outer rings (harder to hit center)
+    // Get random position - slightly biased toward center
     const angle = Math.random() * 360;
     const maxDistance = 225;
-    // Use squared random to bias toward outer rings
-    const distance = Math.pow(Math.random(), 0.55) * maxDistance;
+    const distance = Math.pow(Math.random(), 0.65) * maxDistance;
     
     const x = 225 + distance * Math.cos(angle * Math.PI / 180);
     const y = 225 + distance * Math.sin(angle * Math.PI / 180);
@@ -6513,10 +6512,10 @@ function getDartMultiplier(difficulty, distance, maxDistance) {
     // Inner ring
     if (distanceRatio < 0.18) {
         const innerMultipliers = {
-            easy: [0.8, 1, 1.2, 1.5],
-            medium: [1, 1.5, 2, 3],
-            hard: [2, 3, 4, 6],
-            expert: [3, 5, 8, 12]
+            easy: [1, 1.2, 1.5, 1.8],
+            medium: [1.5, 2, 2.5, 3.5],
+            hard: [2.5, 3.5, 5, 7],
+            expert: [4, 6, 10, 15]
         };
         return innerMultipliers[difficulty][Math.floor(Math.random() * innerMultipliers[difficulty].length)];
     }
@@ -6524,10 +6523,10 @@ function getDartMultiplier(difficulty, distance, maxDistance) {
     // Mid ring
     if (distanceRatio < 0.45) {
         const midMultipliers = {
-            easy: [0.2, 0.3, 0.5, 0.7],
-            medium: [0.3, 0.5, 0.8, 1],
-            hard: [0.5, 1, 1.5, 2],
-            expert: [1, 2, 3, 5]
+            easy: [0.3, 0.5, 0.7, 0.9],
+            medium: [0.5, 0.8, 1, 1.3],
+            hard: [0.8, 1.2, 1.8, 2.5],
+            expert: [1.5, 2.5, 4, 6]
         };
         return midMultipliers[difficulty][Math.floor(Math.random() * midMultipliers[difficulty].length)];
     }
