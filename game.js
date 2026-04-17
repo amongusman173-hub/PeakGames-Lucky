@@ -6498,58 +6498,23 @@ function createDartWave(x, y) {
 function getDartMultiplier(difficulty, distance, maxDistance) {
     const distanceRatio = distance / maxDistance;
 
-    // Bullseye - much smaller zone, lower multipliers
-    if (distanceRatio < 0.05) {
-        const bullseyeMultipliers = {
-            easy: [2, 3, 4, 5],
-            medium: [4, 6, 8, 12],
-            hard: [8, 12, 18, 25],
-            expert: [15, 25, 35, 50]
-        };
-        return bullseyeMultipliers[difficulty][Math.floor(Math.random() * bullseyeMultipliers[difficulty].length)];
-    }
-
-    // Inner ring
+    // Bullseye (green) = 3x
     if (distanceRatio < 0.18) {
-        const innerMultipliers = {
-            easy: [1, 1.2, 1.5, 1.8],
-            medium: [1.5, 2, 2.5, 3.5],
-            hard: [2.5, 3.5, 5, 7],
-            expert: [4, 6, 10, 15]
-        };
-        return innerMultipliers[difficulty][Math.floor(Math.random() * innerMultipliers[difficulty].length)];
+        return 3;
     }
 
-    // Mid ring
+    // Inner ring (yellow) = 1.5x
     if (distanceRatio < 0.45) {
-        const midMultipliers = {
-            easy: [0.3, 0.5, 0.7, 0.9],
-            medium: [0.5, 0.8, 1, 1.3],
-            hard: [0.8, 1.2, 1.8, 2.5],
-            expert: [1.5, 2.5, 4, 6]
-        };
-        return midMultipliers[difficulty][Math.floor(Math.random() * midMultipliers[difficulty].length)];
+        return 1.5;
     }
 
-    // Outer mid ring
+    // Mid ring (red) = 0.5x
     if (distanceRatio < 0.75) {
-        const outerMidMultipliers = {
-            easy: [0, 0.1, 0.2, 0.3],
-            medium: [0, 0.1, 0.2, 0.4],
-            hard: [0, 0.1, 0.3, 0.5],
-            expert: [0, 0.2, 0.5, 1]
-        };
-        return outerMidMultipliers[difficulty][Math.floor(Math.random() * outerMidMultipliers[difficulty].length)];
+        return 0.5;
     }
 
-    // Outer ring - mostly losses
-    const outerMultipliers = {
-        easy: [0, 0, 0.1, 0.2],
-        medium: [0, 0, 0, 0.1],
-        hard: [0, 0, 0, 0],
-        expert: [0, 0, 0, 0]
-    };
-    return outerMultipliers[difficulty][Math.floor(Math.random() * outerMultipliers[difficulty].length)];
+    // Outer ring (brown) = 0x
+    return 0;
 }
 
 // ===== CHICKEN GAME =====
