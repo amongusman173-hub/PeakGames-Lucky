@@ -9907,7 +9907,6 @@ function acceptTOS() {
 // ============================================================
 (function onlineCounter() {
     const PLAYERS_URL = 'https://mantledb.sh/v2/peakgames-lucky/players';
-    // Generate a random anonymous session ID
     var sid = localStorage.getItem('pg-sid');
     if (!sid) {
         sid = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -9915,22 +9914,43 @@ function acceptTOS() {
     }
 
     function heartbeat() {
-        // Read current players, update our entry, write back
         fetch(PLAYERS_URL)
             .then(function(r) { return r.json(); })
             .then(function(players) {
                 if (typeof players !== 'object' || Array.isArray(players)) players = {};
                 var now = Date.now();
-                // Update our heartbeat
-                players[sid] = now;
-                // Remove players inactive for more than 2 minutes
+                players[sid] = { t: now, g: currentGame };
+                // Remove inactive players (2 min timeout)
                 Object.keys(players).forEach(function(id) {
-                    if (now - players[id] > 120000) delete players[id];
+                    var entry = players[id];
+                    var ts = typeof entry === 'object' ? entry.t : entry;
+                    if (now - ts > 120000) delete players[id];
                 });
-                var count = Object.keys(players).length;
+                // Count total and per-game
+                var total = 0;
+                var gameCounts = {};
+                Object.keys(players).forEach(function(id) {
+                    var entry = players[id];
+                    var g = typeof entry === 'object' ? entry.g : 'unknown';
+                    total++;
+                    gameCounts[g] = (gameCounts[g] || 0) + 1;
+                });
+                // Update total badge
                 var el = document.getElementById('online-count');
-                if (el) el.textContent = count;
-                // Write back
+                if (el) el.textContent = total;
+                // Update per-game badges
+                Object.keys(gameCounts).forEach(function(g) {
+                    var badge = document.getElementById('players-' + g);
+                    if (badge) badge.textContent = gameCounts[g] > 0 ? gameCounts[g] + ' 🟢' : '';
+                });
+                // Clear games with 0 players
+                var allGames = ['dice','plinko','mines','limbo','crash','roulette','coinflip','keno','stocks','slots','tower','cases','scratch','packs','pump','drill','diamonds','darts','chicken','hilo','tarot','snakes','blackjack','baccarat','videopoker','horse','rps','holdem'];
+                allGames.forEach(function(g) {
+                    if (!gameCounts[g]) {
+                        var badge = document.getElementById('players-' + g);
+                        if (badge) badge.textContent = '';
+                    }
+                });
                 fetch(PLAYERS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -9940,7 +9960,6 @@ function acceptTOS() {
             .catch(function() {});
     }
 
-    // Remove our entry when leaving
     window.addEventListener('beforeunload', function() {
         fetch(PLAYERS_URL)
             .then(function(r) { return r.json(); })
