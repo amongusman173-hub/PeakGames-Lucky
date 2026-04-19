@@ -1471,15 +1471,32 @@ function playLimbo() {
 
     const resultDisplay = document.getElementById('limbo-result');
     const statusDisplay = document.getElementById('limbo-status');
+    const rocket = document.getElementById('limbo-rocket');
+    const container = document.getElementById('limbo-rocket-container');
+    const containerHeight = container ? container.offsetHeight : 180;
+
+    // Reset rocket
+    if (rocket) {
+        rocket.className = 'limbo-rocket launching';
+        rocket.style.bottom = '10px';
+        rocket.style.opacity = '1';
+    }
 
     // Quick animate counting up
     let current = 1.00;
-    const increment = result / 20; // Faster animation
+    const increment = result / 20;
     let steps = 0;
 
     const interval = setInterval(() => {
         current += increment;
         steps++;
+
+        // Animate rocket rising proportionally
+        if (rocket && container) {
+            const progress = steps / 20;
+            const maxRise = containerHeight - 70;
+            rocket.style.bottom = (10 + maxRise * progress) + 'px';
+        }
 
         if (current >= result || steps >= 20) {
             current = result;
@@ -1495,6 +1512,7 @@ function playLimbo() {
                 statusDisplay.textContent = `Won ${winAmount.toFixed(2)}!`;
                 statusDisplay.style.color = '#00e701';
                 showToast(`Won ${winAmount.toFixed(2)}! (${targetMultiplier.toFixed(2)}x)`, 'success');
+                if (rocket) rocket.className = 'limbo-rocket win-land';
             } else {
                 trackResult('limbo', betAmount, 0);
                 playSound('lose');
@@ -1503,17 +1521,28 @@ function playLimbo() {
                 statusDisplay.textContent = `Lost ${betAmount.toFixed(2)}`;
                 statusDisplay.style.color = '#ff4757';
                 showToast(`Lost ${betAmount.toFixed(2)} - Result: ${result}x`, 'error');
+                if (rocket) rocket.className = 'limbo-rocket crash';
 
                 setTimeout(() => {
                     resultDisplay.style.textShadow = 'none';
-                }, 2000);
+                    // Reset rocket after crash
+                    if (rocket) {
+                        rocket.style.opacity = '1';
+                        rocket.style.bottom = '10px';
+                        rocket.className = 'limbo-rocket';
+                    }
+                }, 1000);
             }
             updateBalance();
 
-            // Release cooldown after animation completes
             setTimeout(() => {
                 limboOnCooldown = false;
-            }, 500);
+                if (rocket) {
+                    rocket.style.bottom = '10px';
+                    rocket.className = 'limbo-rocket';
+                    rocket.style.opacity = '1';
+                }
+            }, 800);
         }
         resultDisplay.textContent = current.toFixed(2) + 'x';
     }, 30);
