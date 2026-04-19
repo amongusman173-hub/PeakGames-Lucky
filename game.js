@@ -9903,7 +9903,7 @@ function acceptTOS() {
 }
 
 // ============================================================
-// ONLINE PLAYER COUNT - fast read every 3s, write every 15s
+// ONLINE PLAYER COUNT - fast read every 3s, direct write every 8s
 // ============================================================
 (function onlineCounter() {
     const PLAYERS_URL = 'https://mantledb.sh/v2/peakgames-lucky/players';
@@ -9914,8 +9914,20 @@ function acceptTOS() {
     }
 
     var allGames = ['dice','plinko','mines','limbo','crash','roulette','coinflip','keno','stocks','slots','tower','cases','scratch','packs','pump','drill','diamonds','darts','chicken','hilo','tarot','snakes','blackjack','baccarat','videopoker','horse','rps','holdem'];
+    var cachedPlayers = {};
 
-    function updateBadges(gameCounts, total) {
+    function updateBadges(players) {
+        var now = Date.now();
+        var total = 0;
+        var gameCounts = {};
+        Object.keys(players).forEach(function(id) {
+            var entry = players[id];
+            var ts = typeof entry === 'object' ? entry.t : entry;
+            if (now - ts > 120000) return;
+            var g = typeof entry === 'object' ? entry.g : 'dice';
+            total++;
+            gameCounts[g] = (gameCounts[g] || 0) + 1;
+        });
         var el = document.getElementById('online-count');
         var dot = document.querySelector('#online-badge span:first-child');
         if (el) el.textContent = total;
@@ -9928,7 +9940,6 @@ function acceptTOS() {
             if (!badge) return;
             var count = gameCounts[g] || 0;
             badge.textContent = count > 0 ? count + ' 🟢' : '';
-            badge.style.color = '#00e701';
         });
     }
 
@@ -9937,64 +9948,43 @@ function acceptTOS() {
             .then(function(r) { return r.json(); })
             .then(function(players) {
                 if (typeof players !== 'object' || Array.isArray(players)) return;
-                var now = Date.now();
-                var total = 0;
-                var gameCounts = {};
-                Object.keys(players).forEach(function(id) {
-                    var entry = players[id];
-                    var ts = typeof entry === 'object' ? entry.t : entry;
-                    if (now - ts > 120000) return; // skip stale
-                    var g = typeof entry === 'object' ? entry.g : 'dice';
-                    total++;
-                    gameCounts[g] = (gameCounts[g] || 0) + 1;
-                });
-                updateBadges(gameCounts, total);
+                cachedPlayers = players;
+                updateBadges(players);
             })
             .catch(function() {});
     }
 
     function writePresence() {
-        fetch(PLAYERS_URL)
-            .then(function(r) { return r.json(); })
-            .then(function(players) {
-                if (typeof players !== 'object' || Array.isArray(players)) players = {};
-                var now = Date.now();
-                players[sid] = { t: now, g: currentGame };
-                // Prune stale while we're here
-                Object.keys(players).forEach(function(id) {
-                    var entry = players[id];
-                    var ts = typeof entry === 'object' ? entry.t : entry;
-                    if (now - ts > 120000) delete players[id];
-                });
-                fetch(PLAYERS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(players)
-                });
-            })
-            .catch(function() {});
+        // Merge our entry into cached data and write directly - no GET needed
+        var now = Date.now();
+        cachedPlayers[sid] = { t: now, g: currentGame };
+        // Prune stale entries from cache
+        Object.keys(cachedPlayers).forEach(function(id) {
+            var entry = cachedPlayers[id];
+            var ts = typeof entry === 'object' ? entry.t : entry;
+            if (now - ts > 120000) delete cachedPlayers[id];
+        });
+        fetch(PLAYERS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cachedPlayers)
+        }).catch(function() {});
     }
 
     window.addEventListener('beforeunload', function() {
-        fetch(PLAYERS_URL)
-            .then(function(r) { return r.json(); })
-            .then(function(players) {
-                if (typeof players !== 'object') return;
-                delete players[sid];
-                fetch(PLAYERS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(players),
-                    keepalive: true
-                });
-            }).catch(function() {});
+        delete cachedPlayers[sid];
+        fetch(PLAYERS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cachedPlayers),
+            keepalive: true
+        });
     });
 
-    // Write presence immediately then every 15s
-    writePresence();
-    setInterval(writePresence, 15000);
+    // Initial read to populate cache, then write our presence
+    readAndDisplay();
+    setTimeout(writePresence, 500);
 
-    // Read and display every 3s
-    setTimeout(readAndDisplay, 1000);
     setInterval(readAndDisplay, 3000);
+    setInterval(writePresence, 8000);
 })();
