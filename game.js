@@ -9903,88 +9903,54 @@ function acceptTOS() {
 }
 
 // ============================================================
-// ONLINE PLAYER COUNT - fast read every 3s, direct write every 8s
+// ONLINE PLAYER COUNT
 // ============================================================
 (function onlineCounter() {
-    const PLAYERS_URL = 'https://mantledb.sh/v2/peakgames-lucky/players';
+    var BLOB = 'https://jsonblob.com/api/jsonBlob/019da64b-ddd9-7dad-b5f2-bee6ff9b065c';
     var sid = localStorage.getItem('pg-sid');
-    if (!sid) {
-        sid = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-        localStorage.setItem('pg-sid', sid);
-    }
+    if (!sid) { sid = Math.random().toString(36).slice(2,10); localStorage.setItem('pg-sid', sid); }
 
-    var allGames = ['dice','plinko','mines','limbo','crash','roulette','coinflip','keno','stocks','slots','tower','cases','scratch','packs','pump','drill','diamonds','darts','chicken','hilo','tarot','snakes','blackjack','baccarat','videopoker','horse','rps','holdem'];
-    var cachedPlayers = {};
+    var allGames = ['dice','plinko','mines','limbo','crash','roulette','coinflip','keno','stocks','slots','tower','cases','scratch','packs','pump','drill','diamonds','darts','chicken','hilo','tarot','snakes','blackjack','baccarat','videopoker','rps','horse'];
+    var cache = {};
 
-    function updateBadges(players) {
-        var now = Date.now();
-        var total = 0;
-        var gameCounts = {};
+    function render(players) {
+        var now = Date.now(), total = 0, counts = {};
         Object.keys(players).forEach(function(id) {
-            var entry = players[id];
-            var ts = typeof entry === 'object' ? entry.t : entry;
-            if (now - ts > 120000) return;
-            var g = typeof entry === 'object' ? entry.g : 'dice';
-            total++;
-            gameCounts[g] = (gameCounts[g] || 0) + 1;
+            var e = players[id];
+            if (!e || now - e.t > 120000) return;
+            total++; counts[e.g] = (counts[e.g]||0)+1;
         });
         var el = document.getElementById('online-count');
-        var dot = document.querySelector('#online-badge span:first-child');
+        var dot = document.querySelector('#online-badge span');
         if (el) el.textContent = total;
-        if (dot) {
-            dot.style.background = total > 0 ? '#00e701' : '#ff4757';
-            dot.style.boxShadow = total > 0 ? '0 0 6px #00e701' : '0 0 6px #ff4757';
-        }
+        if (dot) { dot.style.background = total>0?'#00e701':'#ff4757'; dot.style.boxShadow = '0 0 6px '+(total>0?'#00e701':'#ff4757'); }
         allGames.forEach(function(g) {
-            var badge = document.getElementById('players-' + g);
-            if (!badge) return;
-            var count = gameCounts[g] || 0;
-            badge.textContent = count > 0 ? count + ' 🟢' : '';
+            var b = document.getElementById('players-'+g);
+            if (b) b.textContent = counts[g] ? counts[g]+' 🟢' : '';
         });
     }
 
-    function readAndDisplay() {
-        fetch(PLAYERS_URL)
-            .then(function(r) { return r.json(); })
-            .then(function(players) {
-                if (typeof players !== 'object' || Array.isArray(players)) return;
-                cachedPlayers = players;
-                updateBadges(players);
-            })
-            .catch(function() {});
+    function read() {
+        fetch(BLOB, {headers:{'Accept':'application/json'}})
+            .then(function(r){return r.json();})
+            .then(function(d){ if(d&&typeof d==='object'&&!Array.isArray(d)){cache=d;render(d);} })
+            .catch(function(){});
     }
 
-    function writePresence() {
-        // Merge our entry into cached data and write directly - no GET needed
+    function write() {
+        cache[sid] = {t:Date.now(), g:currentGame};
         var now = Date.now();
-        cachedPlayers[sid] = { t: now, g: currentGame };
-        // Prune stale entries from cache
-        Object.keys(cachedPlayers).forEach(function(id) {
-            var entry = cachedPlayers[id];
-            var ts = typeof entry === 'object' ? entry.t : entry;
-            if (now - ts > 120000) delete cachedPlayers[id];
-        });
-        fetch(PLAYERS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(cachedPlayers)
-        }).catch(function() {});
+        Object.keys(cache).forEach(function(id){ if(now-(cache[id]&&cache[id].t||0)>120000) delete cache[id]; });
+        fetch(BLOB, {method:'PUT', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(cache)}).catch(function(){});
     }
 
     window.addEventListener('beforeunload', function() {
-        delete cachedPlayers[sid];
-        fetch(PLAYERS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(cachedPlayers),
-            keepalive: true
-        });
+        delete cache[sid];
+        fetch(BLOB, {method:'PUT', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(cache), keepalive:true});
     });
 
-    // Initial read to populate cache, then write our presence
-    readAndDisplay();
-    setTimeout(writePresence, 500);
-
-    setInterval(readAndDisplay, 2000);
-    setInterval(writePresence, 5000);
+    read();
+    setTimeout(write, 800);
+    setInterval(read, 3000);
+    setInterval(write, 6000);
 })();
