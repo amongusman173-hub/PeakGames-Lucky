@@ -9985,6 +9985,6 @@ function acceptTOS() {
     readAndDisplay();
     setTimeout(writePresence, 500);
 
-    setInterval(readAndDisplay, 3000);
-    setInterval(writePresence, 8000);
+    setInterval(readAndDisplay, 2000);
+    setInterval(writePresence, 5000);
 })();
