@@ -9561,7 +9561,7 @@ function openAdminPasswordPrompt() {
 
 function checkAdminPassword() {
     const input = document.getElementById('admin-password-input');
-    if (input.value === 'mango') {
+    if (input.value === 'm@ango') {
         document.getElementById('admin-password-modal').style.display = 'none';
         input.value = '';
         document.getElementById('admin-panel-modal').style.display = 'block';
@@ -9871,3 +9871,33 @@ function showPollResults(poll, myChoice) {
     setTimeout(poll, 3000);
     setInterval(poll, 5000);
 })();
+
+// ============================================================
+// TOS - Show once, remembered via localStorage
+// ============================================================
+(function initTOS() {
+    if (!localStorage.getItem('tos-accepted')) {
+        var modal = document.getElementById('tos-modal');
+        modal.style.display = 'flex';
+        var checkbox = document.getElementById('tos-checkbox');
+        var btn = document.getElementById('tos-accept-btn');
+        checkbox.addEventListener('change', function() {
+            if (checkbox.checked) {
+                btn.style.background = '#ffc800';
+                btn.style.color = '#000';
+                btn.style.cursor = 'pointer';
+                btn.disabled = false;
+            } else {
+                btn.style.background = '#2f4553';
+                btn.style.color = '#888';
+                btn.style.cursor = 'not-allowed';
+                btn.disabled = true;
+            }
+        });
+    }
+})();
+
+function acceptTOS() {
+    localStorage.setItem('tos-accepted', '1');
+    document.getElementById('tos-modal').style.display = 'none';
+}

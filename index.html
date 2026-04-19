@@ -2832,6 +2832,33 @@ Cross the road</div>
   <button onclick="document.getElementById('poll-modal').style.display='none';document.getElementById('poll-modal').dataset.pollId='';" style="margin-top:10px;background:transparent;border:none;color:#556b7c;font-size:12px;cursor:pointer;width:100%;">Dismiss</button>
 </div>
 
+<!-- TOS Modal -->
+<div id="tos-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;justify-content:center;align-items:center;">
+  <div style="background:#0f212e;border:2px solid #ffc800;border-radius:14px;width:90%;max-width:520px;max-height:85vh;overflow-y:auto;padding:30px;box-sizing:border-box;">
+    <div style="font-size:32px;text-align:center;margin-bottom:10px;">⚠️</div>
+    <h2 style="color:#ffc800;text-align:center;margin:0 0 6px;">Terms of Service</h2>
+    <p style="color:#b1bad3;font-size:13px;text-align:center;margin-bottom:20px;">Please read and accept before playing</p>
+    <div style="background:#1a2c3a;border-radius:8px;padding:16px;font-size:13px;color:#b1bad3;line-height:1.7;margin-bottom:20px;">
+      <p style="color:#ff4757;font-weight:700;margin:0 0 10px;">🔞 You must be 21 or older to use this site.</p>
+      <p>Lucky Games is a <strong style="color:#fff;">free entertainment platform only</strong>. No real money is involved. All in-game currency is virtual with no real-world value.</p>
+      <p>By continuing, you confirm that:</p>
+      <ul style="margin:8px 0;padding-left:20px;">
+        <li>You are <strong style="color:#fff;">21 years of age or older</strong></li>
+        <li>You understand this is for entertainment only</li>
+        <li>You accept that the site owner is <strong style="color:#fff;">not responsible</strong> for any gambling-related habits, addiction, or harm that may result from use of this site</li>
+        <li>You use this site entirely at your own risk</li>
+      </ul>
+      <p>If you are under 21 or are affected by problem gambling, please leave now. For help: <a href="https://www.ncpgambling.org" target="_blank" style="color:#00e701;">ncpgambling.org</a> — 1-800-522-4700</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <input type="checkbox" id="tos-checkbox" style="width:18px;height:18px;cursor:pointer;accent-color:#ffc800;">
+      <label for="tos-checkbox" style="color:#b1bad3;font-size:13px;cursor:pointer;">I am 21 or older and I agree to the Terms of Service</label>
+    </div>
+    <button onclick="acceptTOS()" id="tos-accept-btn" style="width:100%;background:#2f4553;color:#888;border:none;padding:14px;border-radius:8px;cursor:not-allowed;font-weight:700;font-size:15px;transition:all 0.2s;" disabled>Enter Lucky Games</button>
+    <p style="text-align:center;margin-top:12px;font-size:12px;"><a href="privacy-policy.html" style="color:#556b7c;">Privacy Policy</a></p>
+  </div>
+</div>
+
 <script src="game.js"></script>
 </body>
 </html>
