@@ -9901,3 +9901,61 @@ function acceptTOS() {
     localStorage.setItem('tos-accepted', '1');
     document.getElementById('tos-modal').style.display = 'none';
 }
+
+// ============================================================
+// ONLINE PLAYER COUNT - anonymous heartbeat via MantleDB
+// ============================================================
+(function onlineCounter() {
+    const PLAYERS_URL = 'https://mantledb.sh/v2/peakgames-lucky/players';
+    // Generate a random anonymous session ID
+    var sid = localStorage.getItem('pg-sid');
+    if (!sid) {
+        sid = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+        localStorage.setItem('pg-sid', sid);
+    }
+
+    function heartbeat() {
+        // Read current players, update our entry, write back
+        fetch(PLAYERS_URL)
+            .then(function(r) { return r.json(); })
+            .then(function(players) {
+                if (typeof players !== 'object' || Array.isArray(players)) players = {};
+                var now = Date.now();
+                // Update our heartbeat
+                players[sid] = now;
+                // Remove players inactive for more than 2 minutes
+                Object.keys(players).forEach(function(id) {
+                    if (now - players[id] > 120000) delete players[id];
+                });
+                var count = Object.keys(players).length;
+                var el = document.getElementById('online-count');
+                if (el) el.textContent = count;
+                // Write back
+                fetch(PLAYERS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(players)
+                });
+            })
+            .catch(function() {});
+    }
+
+    // Remove our entry when leaving
+    window.addEventListener('beforeunload', function() {
+        fetch(PLAYERS_URL)
+            .then(function(r) { return r.json(); })
+            .then(function(players) {
+                if (typeof players !== 'object') return;
+                delete players[sid];
+                fetch(PLAYERS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(players),
+                    keepalive: true
+                });
+            }).catch(function() {});
+    });
+
+    heartbeat();
+    setInterval(heartbeat, 30000);
+})();
