@@ -9903,7 +9903,7 @@ function acceptTOS() {
 }
 
 // ============================================================
-// ONLINE PLAYER COUNT - anonymous heartbeat via MantleDB
+// ONLINE PLAYER COUNT - fast read every 3s, write every 15s
 // ============================================================
 (function onlineCounter() {
     const PLAYERS_URL = 'https://mantledb.sh/v2/peakgames-lucky/players';
@@ -9916,7 +9916,6 @@ function acceptTOS() {
     var allGames = ['dice','plinko','mines','limbo','crash','roulette','coinflip','keno','stocks','slots','tower','cases','scratch','packs','pump','drill','diamonds','darts','chicken','hilo','tarot','snakes','blackjack','baccarat','videopoker','horse','rps','holdem'];
 
     function updateBadges(gameCounts, total) {
-        // Update total header badge
         var el = document.getElementById('online-count');
         var dot = document.querySelector('#online-badge span:first-child');
         if (el) el.textContent = total;
@@ -9924,43 +9923,49 @@ function acceptTOS() {
             dot.style.background = total > 0 ? '#00e701' : '#ff4757';
             dot.style.boxShadow = total > 0 ? '0 0 6px #00e701' : '0 0 6px #ff4757';
         }
-        // Update per-game badges
         allGames.forEach(function(g) {
             var badge = document.getElementById('players-' + g);
             if (!badge) return;
             var count = gameCounts[g] || 0;
-            if (count > 0) {
-                badge.textContent = count + ' 🟢';
-                badge.style.color = '#00e701';
-            } else {
-                badge.textContent = '';
-            }
+            badge.textContent = count > 0 ? count + ' 🟢' : '';
+            badge.style.color = '#00e701';
         });
     }
 
-    function heartbeat() {
+    function readAndDisplay() {
+        fetch(PLAYERS_URL)
+            .then(function(r) { return r.json(); })
+            .then(function(players) {
+                if (typeof players !== 'object' || Array.isArray(players)) return;
+                var now = Date.now();
+                var total = 0;
+                var gameCounts = {};
+                Object.keys(players).forEach(function(id) {
+                    var entry = players[id];
+                    var ts = typeof entry === 'object' ? entry.t : entry;
+                    if (now - ts > 120000) return; // skip stale
+                    var g = typeof entry === 'object' ? entry.g : 'dice';
+                    total++;
+                    gameCounts[g] = (gameCounts[g] || 0) + 1;
+                });
+                updateBadges(gameCounts, total);
+            })
+            .catch(function() {});
+    }
+
+    function writePresence() {
         fetch(PLAYERS_URL)
             .then(function(r) { return r.json(); })
             .then(function(players) {
                 if (typeof players !== 'object' || Array.isArray(players)) players = {};
                 var now = Date.now();
                 players[sid] = { t: now, g: currentGame };
-                // Remove inactive (2 min)
+                // Prune stale while we're here
                 Object.keys(players).forEach(function(id) {
                     var entry = players[id];
                     var ts = typeof entry === 'object' ? entry.t : entry;
                     if (now - ts > 120000) delete players[id];
                 });
-                // Tally
-                var total = 0;
-                var gameCounts = {};
-                Object.keys(players).forEach(function(id) {
-                    var entry = players[id];
-                    var g = typeof entry === 'object' ? entry.g : 'dice';
-                    total++;
-                    gameCounts[g] = (gameCounts[g] || 0) + 1;
-                });
-                updateBadges(gameCounts, total);
                 fetch(PLAYERS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -9985,6 +9990,11 @@ function acceptTOS() {
             }).catch(function() {});
     });
 
-    heartbeat();
-    setInterval(heartbeat, 10000);
+    // Write presence immediately then every 15s
+    writePresence();
+    setInterval(writePresence, 15000);
+
+    // Read and display every 3s
+    setTimeout(readAndDisplay, 1000);
+    setInterval(readAndDisplay, 3000);
 })();
