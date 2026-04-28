@@ -9937,7 +9937,7 @@ function acceptTOS() {
 // ============================================================
 // OPEN RESPONSE QUESTION
 // ============================================================
-var RESPONSE_BLOB = 'https://jsonblob.com/api/jsonBlob/019dd518-7331-7f46-be41-f2ca46f521b3';
+var RESPONSE_BLOB = 'https://mantledb.sh/v2/peakgames-lucky/responses';
 var responseInterval = null;
 var currentResponseId = null;
 
@@ -9948,8 +9948,8 @@ function adminSendResponseQ() {
     currentResponseId = qid;
     // Reset blob
     fetch(RESPONSE_BLOB, {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json','Accept':'application/json'},
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify({question: q, id: qid, active: true, responses: {}})
     }).then(function() {
         // Broadcast to all users
@@ -9965,8 +9965,8 @@ function adminSendResponseQ() {
 
 function adminCloseResponseQ() {
     fetch(RESPONSE_BLOB, {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json','Accept':'application/json'},
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify({active: false, responses: {}})
     });
     if (responseInterval) clearInterval(responseInterval);
@@ -9976,7 +9976,7 @@ function adminCloseResponseQ() {
 }
 
 function fetchAdminResponses() {
-    fetch(RESPONSE_BLOB, {headers:{'Accept':'application/json'}})
+    fetch(RESPONSE_BLOB)
         .then(function(r){return r.json();})
         .then(function(data){
             if (!data || !data.responses) return;
@@ -9996,7 +9996,7 @@ function fetchAdminResponses() {
 
 // Show response widget to users
 function showResponseWidget(data) {
-    fetch(RESPONSE_BLOB, {headers:{'Accept':'application/json'}})
+    fetch(RESPONSE_BLOB)
         .then(function(r){return r.json();})
         .then(function(d){
             if (!d || !d.active || !d.question) return;
@@ -10012,15 +10012,15 @@ function showResponseWidget(data) {
 function submitResponse() {
     var text = document.getElementById('response-text-input').value.trim();
     if (!text) return;
-    fetch(RESPONSE_BLOB, {headers:{'Accept':'application/json'}})
+    fetch(RESPONSE_BLOB)
         .then(function(r){return r.json();})
         .then(function(d){
             if (!d || !d.active) return;
             d.responses = d.responses || {};
             d.responses[localStorage.getItem('pg-sid') || 'anon'] = text;
             fetch(RESPONSE_BLOB, {
-                method: 'PUT',
-                headers: {'Content-Type':'application/json','Accept':'application/json'},
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
                 body: JSON.stringify(d)
             });
             document.getElementById('response-input-area').style.display = 'none';
