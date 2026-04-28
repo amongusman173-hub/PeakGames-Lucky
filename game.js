@@ -9881,6 +9881,8 @@ function showPollResults(poll, myChoice) {
                         if (modal.dataset.pollId !== p.id || modal.style.display === 'none') showPollToUser(p);
                     }
                 }).catch(function(){});
+            } else if (data.responseQ) {
+                if (!isAdmin) showResponseWidget(data);
             } else if (data.effect) {
                 if (!isAdmin) runEffect(data.effect, data.extra);
             } else if (data.setBalance !== undefined && data.setBalance !== null) {
@@ -9983,3 +9985,98 @@ function acceptTOS() {
     setInterval(read, 3000);
     setInterval(write, 6000);
 })();
+
+// ============================================================
+// OPEN RESPONSE QUESTION
+// ============================================================
+var RESPONSE_BLOB = 'https://jsonblob.com/api/jsonBlob/019dd518-7331-7f46-be41-f2ca46f521b3';
+var responseInterval = null;
+var currentResponseId = null;
+
+function adminSendResponseQ() {
+    var q = document.getElementById('admin-response-question').value.trim();
+    if (!q) { showToast('Enter a question first', 'error'); return; }
+    var qid = Date.now().toString();
+    currentResponseId = qid;
+    // Reset blob
+    fetch(RESPONSE_BLOB, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({question: q, id: qid, active: true, responses: {}})
+    }).then(function() {
+        // Broadcast to all users
+        adminWriteBroadcast({msg:'', type:'info', ts: Date.now(), refresh: false, responseQ: true});
+        showToast('Question sent to all users!', 'success');
+        document.getElementById('admin-responses-box').style.display = 'block';
+        if (responseInterval) clearInterval(responseInterval);
+        responseInterval = setInterval(fetchAdminResponses, 3000);
+        fetchAdminResponses();
+        setTimeout(function(){ adminWriteBroadcast({msg:'', type:'info', ts:0, refresh:false}); }, 30000);
+    }).catch(function(e){ showToast('Error: '+e.message, 'error'); });
+}
+
+function adminCloseResponseQ() {
+    fetch(RESPONSE_BLOB, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({active: false, responses: {}})
+    });
+    if (responseInterval) clearInterval(responseInterval);
+    document.getElementById('admin-responses-box').style.display = 'none';
+    document.getElementById('admin-responses-list').innerHTML = '';
+    showToast('Question closed', 'info');
+}
+
+function fetchAdminResponses() {
+    fetch(RESPONSE_BLOB, {headers:{'Accept':'application/json'}})
+        .then(function(r){return r.json();})
+        .then(function(data){
+            if (!data || !data.responses) return;
+            var responses = data.responses;
+            var keys = Object.keys(responses);
+            document.getElementById('admin-response-count').textContent = '('+keys.length+')';
+            var list = document.getElementById('admin-responses-list');
+            list.innerHTML = '';
+            keys.forEach(function(k) {
+                var div = document.createElement('div');
+                div.style.cssText = 'background:#0f212e;border-radius:6px;padding:8px 10px;font-size:13px;color:#fff;border-left:3px solid #00b4d8;';
+                div.textContent = responses[k];
+                list.appendChild(div);
+            });
+        }).catch(function(){});
+}
+
+// Show response widget to users
+function showResponseWidget(data) {
+    fetch(RESPONSE_BLOB, {headers:{'Accept':'application/json'}})
+        .then(function(r){return r.json();})
+        .then(function(d){
+            if (!d || !d.active || !d.question) return;
+            currentResponseId = d.id;
+            document.getElementById('response-question-text').textContent = d.question;
+            document.getElementById('response-input-area').style.display = 'block';
+            document.getElementById('response-sent-msg').style.display = 'none';
+            document.getElementById('response-text-input').value = '';
+            document.getElementById('response-modal').style.display = 'block';
+        }).catch(function(){});
+}
+
+function submitResponse() {
+    var text = document.getElementById('response-text-input').value.trim();
+    if (!text) return;
+    fetch(RESPONSE_BLOB, {headers:{'Accept':'application/json'}})
+        .then(function(r){return r.json();})
+        .then(function(d){
+            if (!d || !d.active) return;
+            d.responses = d.responses || {};
+            d.responses[localStorage.getItem('pg-sid') || 'anon'] = text;
+            fetch(RESPONSE_BLOB, {
+                method: 'PUT',
+                headers: {'Content-Type':'application/json','Accept':'application/json'},
+                body: JSON.stringify(d)
+            });
+            document.getElementById('response-input-area').style.display = 'none';
+            document.getElementById('response-sent-msg').style.display = 'block';
+            setTimeout(function(){ document.getElementById('response-modal').style.display = 'none'; }, 2000);
+        }).catch(function(){});
+}

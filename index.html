@@ -25,7 +25,7 @@ Plinko<span id="players-plinko" style="font-size:10px;color:#00e701;margin-left:
 Mines<span id="players-mines" style="font-size:10px;color:#00e701;margin-left:auto;padding-left:4px;"></span>
 </button>
 <button class="nav-item" onclick="showGame('limbo')">
-<span class="icon">��</span>
+<span class="icon">🚀</span>
 Limbo<span id="players-limbo" style="font-size:10px;color:#00e701;margin-left:auto;padding-left:4px;"></span>
 </button>
 <button class="nav-item" onclick="showGame('crash')">
@@ -2823,6 +2823,18 @@ Cross the road</div>
         </div>
       </div>
       <div style="background:#1a2c3a;border-radius:8px;padding:14px;">
+        <div style="color:#00b4d8;font-weight:700;margin-bottom:10px;">💬 Open Response Question</div>
+        <input id="admin-response-question" placeholder="Ask users anything..." style="width:100%;background:#0f212e;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button onclick="adminSendResponseQ()" style="flex:1;background:#00b4d8;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:700;">Ask Everyone</button>
+          <button onclick="adminCloseResponseQ()" style="flex:1;background:#2f4553;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;">Close</button>
+        </div>
+        <div id="admin-responses-box" style="display:none;">
+          <div style="color:#00b4d8;font-size:13px;font-weight:600;margin-bottom:6px;">Live Responses <span id="admin-response-count" style="color:#b1bad3;">(0)</span></div>
+          <div id="admin-responses-list" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+      <div style="background:#1a2c3a;border-radius:8px;padding:14px;">
         <div style="color:#ff4757;font-weight:700;margin-bottom:10px;">Refresh All Users</div>
         <button onclick="adminRefreshAll()" style="width:100%;background:#ff4757;color:#fff;border:none;padding:12px;border-radius:6px;cursor:pointer;font-weight:700;">Refresh Everyone</button>
       </div>
@@ -2844,7 +2856,19 @@ Cross the road</div>
   </div>
 </div>
 
-<!-- Poll Widget -->
+<!-- Response Question Widget -->
+<div id="response-modal" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;background:#0f212e;border:2px solid #00b4d8;border-radius:14px;padding:20px;width:320px;box-shadow:0 8px 40px rgba(0,180,216,0.4);">
+  <div style="color:#00b4d8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">💬 Question from Admin</div>
+  <div id="response-question-text" style="color:#fff;font-size:15px;font-weight:700;margin-bottom:12px;"></div>
+  <div id="response-input-area">
+    <textarea id="response-text-input" placeholder="Type your response..." style="width:100%;height:70px;background:#1a2c3a;border:1px solid #2f4553;color:#fff;padding:8px;border-radius:6px;resize:none;font-size:13px;box-sizing:border-box;margin-bottom:8px;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="submitResponse()" style="flex:1;background:#00b4d8;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:700;">Send</button>
+      <button onclick="document.getElementById('response-modal').style.display='none'" style="background:#2f4553;color:#fff;border:none;padding:10px 14px;border-radius:6px;cursor:pointer;">Skip</button>
+    </div>
+  </div>
+  <div id="response-sent-msg" style="display:none;color:#00b4d8;text-align:center;padding:10px;font-weight:600;">✓ Response sent!</div>
+</div>
 <div id="poll-modal" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#0f212e;border:2px solid #a855f7;border-radius:14px;padding:20px;min-width:300px;max-width:400px;box-shadow:0 8px 40px rgba(168,85,247,0.4);">
   <div style="color:#a855f7;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Live Poll</div>
   <div id="poll-question" style="color:#fff;font-size:15px;font-weight:700;margin-bottom:12px;"></div>
