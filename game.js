@@ -9933,58 +9933,6 @@ function acceptTOS() {
     document.getElementById('tos-modal').style.display = 'none';
 }
 
-// ============================================================
-// ONLINE PLAYER COUNT
-// ============================================================
-(function onlineCounter() {
-    var BLOB = 'https://jsonblob.com/api/jsonBlob/019da64b-ddd9-7dad-b5f2-bee6ff9b065c';
-    var sid = localStorage.getItem('pg-sid');
-    if (!sid) { sid = Math.random().toString(36).slice(2,10); localStorage.setItem('pg-sid', sid); }
-
-    var allGames = ['dice','plinko','mines','limbo','crash','roulette','coinflip','keno','stocks','slots','tower','cases','scratch','packs','pump','drill','diamonds','darts','chicken','hilo','tarot','snakes','blackjack','baccarat','videopoker','rps','horse'];
-    var cache = {};
-
-    function render(players) {
-        var now = Date.now(), total = 0, counts = {};
-        Object.keys(players).forEach(function(id) {
-            var e = players[id];
-            if (!e || now - e.t > 120000) return;
-            total++; counts[e.g] = (counts[e.g]||0)+1;
-        });
-        var el = document.getElementById('online-count');
-        var dot = document.querySelector('#online-badge span');
-        if (el) el.textContent = total;
-        if (dot) { dot.style.background = total>0?'#00e701':'#ff4757'; dot.style.boxShadow = '0 0 6px '+(total>0?'#00e701':'#ff4757'); }
-        allGames.forEach(function(g) {
-            var b = document.getElementById('players-'+g);
-            if (b) b.textContent = counts[g] ? counts[g]+' 🟢' : '';
-        });
-    }
-
-    function read() {
-        fetch(BLOB, {headers:{'Accept':'application/json'}})
-            .then(function(r){return r.json();})
-            .then(function(d){ if(d&&typeof d==='object'&&!Array.isArray(d)){cache=d;render(d);} })
-            .catch(function(){});
-    }
-
-    function write() {
-        cache[sid] = {t:Date.now(), g:currentGame};
-        var now = Date.now();
-        Object.keys(cache).forEach(function(id){ if(now-(cache[id]&&cache[id].t||0)>120000) delete cache[id]; });
-        fetch(BLOB, {method:'PUT', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(cache)}).catch(function(){});
-    }
-
-    window.addEventListener('beforeunload', function() {
-        delete cache[sid];
-        fetch(BLOB, {method:'PUT', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(cache), keepalive:true});
-    });
-
-    read();
-    setTimeout(write, 800);
-    setInterval(read, 3000);
-    setInterval(write, 6000);
-})();
 
 // ============================================================
 // OPEN RESPONSE QUESTION
