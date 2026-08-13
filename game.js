@@ -1,4 +1,3 @@
-  mnSafe: 0, mnBonus: 0, mnInsurance: 0,
 let balance = 1000.00;
 let currentGame = 'dice';
 let currentStatsGame = 'dice'; // Track which game's stats are being displayed
