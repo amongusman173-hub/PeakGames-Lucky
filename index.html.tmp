@@ -1,0 +1,324 @@
+<div class="shop-divider"></div>
+<!-- Cases Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">📦 Cases Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🍀</span>
+<div>
+<div class="track-name">Lucky Case</div>
+<div class="track-status">Better item odds • Owned: <span id="upgrade-casesLuck">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('casesLuck')">Buy $200</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">💎</span>
+<div>
+<div class="track-name">Rare Finder</div>
+<div class="track-status">Higher chance of rare items • Owned: <span id="upgrade-casesRare">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('casesRare')">Buy $300</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Scratch Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🎫 Scratch Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🌟</span>
+<div>
+<div class="track-name">Golden Ticket</div>
+<div class="track-status">Better scratch odds • Owned: <span id="upgrade-scratchGolden">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('scratchGolden')">Buy $250</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">👁️</span>
+<div>
+<div class="track-name">X-Ray Vision</div>
+<div class="track-status">See one symbol before scratching • Owned: <span id="upgrade-scratchReveal">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('scratchReveal')">Buy $200</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Packs Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🎴 Packs Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">⚡</span>
+<div>
+<div class="track-name">Pack Boost</div>
+<div class="track-status">Better pack rewards • Owned: <span id="upgrade-packsBoost">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('packsBoost')">Buy $250</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">👑</span>
+<div>
+<div class="track-name">Legendary Hunter</div>
+<div class="track-status">Higher legendary chance • Owned: <span id="upgrade-packsLegendary">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('packsLegendary')">Buy $350</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Pump Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🎈 Pump Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🛡️</span>
+<div>
+<div class="track-name">Pump Safety</div>
+<div class="track-status">One free pop protection • Owned: <span id="upgrade-pumpSafety">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('pumpSafety')">Buy $200</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">💰</span>
+<div>
+<div class="track-name">Greedy Pump</div>
+<div class="track-status">Higher multipliers • Owned: <span id="upgrade-pumpGreed">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('pumpGreed')">Buy $300</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Drill Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🔨 Drill Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🍀</span>
+<div>
+<div class="track-name">Lucky Drill</div>
+<div class="track-status">Better path generation • Owned: <span id="upgrade-drillLuck">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('drillLuck')">Buy $250</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">👁️</span>
+<div>
+<div class="track-name">Drill Vision</div>
+<div class="track-status">See next segment hint • Owned: <span id="upgrade-drillVision">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('drillVision')">Buy $300</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Diamonds Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">💎 Diamonds Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🎯</span>
+<div>
+<div class="track-name">Match Master</div>
+<div class="track-status">Better matching odds • Owned: <span id="upgrade-diamondsMatch">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('diamondsMatch')">Buy $200</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">💎</span>
+<div>
+<div class="track-name">Rare Gems</div>
+<div class="track-status">More valuable symbols • Owned: <span id="upgrade-diamondsRare">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('diamondsRare')">Buy $250</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Darts Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🎯 Darts Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🎯</span>
+<div>
+<div class="track-name">Perfect Aim</div>
+<div class="track-status">Better accuracy • Owned: <span id="upgrade-dartsAim">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('dartsAim')">Buy $200</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🏆</span>
+<div>
+<div class="track-name">Bullseye Master</div>
+<div class="track-status">Higher bullseye chance • Owned: <span id="upgrade-dartsBullseye">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('dartsBullseye')">Buy $300</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Chicken Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🐔 Chicken Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🛡️</span>
+<div>
+<div class="track-name">Chicken Shield</div>
+<div class="track-status">One free fox protection • Owned: <span id="upgrade-chickenSafety">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('chickenSafety')">Buy $200</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">💰</span>
+<div>
+<div class="track-name">Greedy Chicken</div>
+<div class="track-status">Higher multipliers • Owned: <span id="upgrade-chickenGreed">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('chickenGreed')">Buy $250</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Hi-Lo Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🃏 Hi-Lo Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🔮</span>
+<div>
+<div class="track-name">Card Oracle</div>
+<div class="track-status">See next card hint • Owned: <span id="upgrade-hiloOracle">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('hiloOracle')">Buy $250</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🔥</span>
+<div>
+<div class="track-name">Streak Master</div>
+<div class="track-status">Better streak multipliers • Owned: <span id="upgrade-hiloStreak">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('hiloStreak')">Buy $300</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Tarot Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🔮 Tarot Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">✨</span>
+<div>
+<div class="track-name">Fortune Teller</div>
+<div class="track-status">Better card readings • Owned: <span id="upgrade-tarotFortune">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('tarotFortune')">Buy $300</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">👁️</span>
+<div>
+<div class="track-name">Mystic Vision</div>
+<div class="track-status">See card hints • Owned: <span id="upgrade-tarotVision">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('tarotVision')">Buy $350</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Snakes Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🐍 Snakes Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🪜</span>
+<div>
+<div class="track-name">Ladder Boost</div>
+<div class="track-status">More ladders, fewer snakes • Owned: <span id="upgrade-snakesLadder">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('snakesLadder')">Buy $250</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🍀</span>
+<div>
+<div class="track-name">Lucky Roll</div>
+<div class="track-status">Better dice rolls • Owned: <span id="upgrade-snakesLuck">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('snakesLuck')">Buy $200</button>
+</div>
+</div>
+</div>
+<div class="shop-divider"></div>
+<!-- Baccarat Upgrades -->
+<div class="shop-section">
+<h3 class="shop-section-title">🎴 Baccarat Upgrades</h3>
+<div class="shop-items">
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">👁️</span>
+<div>
+<div class="track-name">Card Vision</div>
+<div class="track-status">See next card • Owned: <span id="upgrade-baccaratVision">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('baccaratVision')">Buy $350</button>
+</div>
+<div class="shop-item">
+<div class="track-info">
+<span class="track-icon">🍀</span>
+<div>
+<div class="track-name">Lucky Baccarat</div>
+<div class="track-status">Better win odds • Owned: <span id="upgrade-baccaratLuck">0</span></div>
+</div>
+</div>
+<button class="buy-btn" onclick="buyUpgrade('baccaratLuck')">Buy $300</button>
+</div>
+</div>
+</div>

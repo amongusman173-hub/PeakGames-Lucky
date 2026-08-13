@@ -21,11 +21,7 @@ let achievements = {
     musicCollector: false,
     upgradeKing: false,
     comebackKid: false,
-    riskTaker: false,
-    solitaireChampion: false,
-    solitairePro: false,
-    solitaireSpeedrun: false,
-    pokerChampion: false
+    riskTaker: false
 };
 
 let achievementStats = {
@@ -41,10 +37,7 @@ let achievementStats = {
     slotsJackpots: 0,
     tracksOwned: 0,
     upgradesPurchased: 0,
-    comebackAmount: 0,
-    solitaireWins: 0,
-    solitaireBestTime: 0,
-    pokerWins: 0
+    comebackAmount: 0
 };
 
 let minesGameActive = false;
@@ -208,7 +201,7 @@ sounds.cashPayoutLarge.volume = 0.35;
 sounds.blackjackCardFlip.volume = 0.3;
 
 function playSound(soundName) {
-    if (!soundMuted && sounds[soundName]) {
+    if (sounds[soundName]) {
         // Clone the audio to allow overlapping sounds
         const soundClone = sounds[soundName].cloneNode();
         soundClone.volume = sounds[soundName].volume;
@@ -224,31 +217,6 @@ function playWinSound(winAmount) {
     } else if (winAmount > 0) {
         playSound('cashPayoutSmall');
     }
-
-    // Full-screen celebration for notable wins
-    if (winAmount >= 100) {
-        showBigWin(winAmount);
-    }
-}
-
-// Full-screen golden "BIG WIN" overlay for large wins
-function showBigWin(amount) {
-    if (!animationsEnabled || document.querySelector('.bigwin-overlay')) return;
-    const overlay = document.createElement('div');
-    overlay.className = 'bigwin-overlay';
-    overlay.innerHTML = '<div class="bigwin-card"><div class="bigwin-label">🎉 BIG WIN 🎉</div><div class="bigwin-amount">$' + amount.toFixed(2) + '</div></div>';
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('show'));
-
-    // Extra confetti bursts to make it feel special
-    for (let i = 0; i < 3; i++) {
-        setTimeout(createConfetti, i * 350);
-    }
-
-    setTimeout(() => {
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.remove(), 400);
-    }, 1800);
 }
 
 // Music system
@@ -299,70 +267,6 @@ function toggleMusic() {
         btn.textContent = '🎵 Music: OFF';
         btn.classList.remove('active');
         Object.values(musicTracks).forEach(track => track.pause());
-    }
-}
-
-// ===== SETTINGS & THEMES =====
-let soundMuted = localStorage.getItem('pg-sound-muted') === '1';
-let animationsEnabled = localStorage.getItem('pg-animations') !== '0';
-
-const THEMES = {
-    classic: { name: 'Classic', icon: '🎰' },
-    neon: { name: 'Neon', icon: '🌈' },
-    ocean: { name: 'Ocean', icon: '🌊' },
-    ember: { name: 'Ember', icon: '🔥' },
-    midnight: { name: 'Midnight', icon: '🌙' }
-};
-
-function applyTheme(theme) {
-    if (!THEMES[theme]) theme = 'classic';
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('pg-theme', theme);
-    const swatches = document.querySelectorAll('.theme-swatch');
-    swatches.forEach(s => s.classList.toggle('selected', s.dataset.theme === theme));
-}
-
-function openSettings() {
-    playSound('openShop');
-    document.getElementById('settings-modal').classList.add('active');
-    updateSettingsUI();
-}
-
-function closeSettings() {
-    document.getElementById('settings-modal').classList.remove('active');
-}
-
-function updateSettingsUI() {
-    const theme = localStorage.getItem('pg-theme') || 'classic';
-    const swatches = document.querySelectorAll('.theme-swatch');
-    swatches.forEach(s => s.classList.toggle('selected', s.dataset.theme === theme));
-    document.getElementById('settings-sound-toggle').textContent = soundMuted ? '🔇 Sound: OFF' : '🔊 Sound: ON';
-    document.getElementById('settings-sound-toggle').classList.toggle('active', !soundMuted);
-    document.getElementById('settings-music-toggle').textContent = musicEnabled ? '🎵 Music: ON' : '🎵 Music: OFF';
-    document.getElementById('settings-music-toggle').classList.toggle('active', musicEnabled);
-    document.getElementById('settings-anim-toggle').textContent = animationsEnabled ? '✨ Animations: ON' : '✨ Animations: OFF';
-    document.getElementById('settings-anim-toggle').classList.toggle('active', animationsEnabled);
-}
-
-function toggleSoundMuted() {
-    soundMuted = !soundMuted;
-    localStorage.setItem('pg-sound-muted', soundMuted ? '1' : '0');
-    if (!soundMuted) playSound('ding');
-    updateSettingsUI();
-}
-
-function toggleAnimations() {
-    animationsEnabled = !animationsEnabled;
-    localStorage.setItem('pg-animations', animationsEnabled ? '1' : '0');
-    updateSettingsUI();
-}
-
-function resetLocalProgress() {
-    if (confirm('Reset all local settings and reload the game? Your balance will reset to $1,000.')) {
-        localStorage.removeItem('pg-theme');
-        localStorage.removeItem('pg-sound-muted');
-        localStorage.removeItem('pg-animations');
-        location.reload();
     }
 }
 
@@ -524,30 +428,6 @@ function checkAchievement(type, value) {
         case 'riskTaker':
             if (!achievements.riskTaker && value >= 500) {
                 achievements.riskTaker = true;
-                unlocked = true;
-            }
-            break;
-        case 'solitaireChampion':
-            if (!achievements.solitaireChampion && achievementStats.solitaireWins >= 1) {
-                achievements.solitaireChampion = true;
-                unlocked = true;
-            }
-            break;
-        case 'solitairePro':
-            if (!achievements.solitairePro && achievementStats.solitaireWins >= 5) {
-                achievements.solitairePro = true;
-                unlocked = true;
-            }
-            break;
-        case 'solitaireSpeedrun':
-            if (!achievements.solitaireSpeedrun && achievementStats.solitaireBestTime > 0 && achievementStats.solitaireBestTime < 120) {
-                achievements.solitaireSpeedrun = true;
-                unlocked = true;
-            }
-            break;
-        case 'pokerChampion':
-            if (!achievements.pokerChampion && achievementStats.pokerWins >= 1) {
-                achievements.pokerChampion = true;
                 unlocked = true;
             }
             break;
@@ -873,37 +753,10 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Animated balance count-up/down
-let balanceTickerId = null;
-let balanceDisplayValue = null;
-
 // Update balance display
 function updateBalance() {
-    const el = document.getElementById('balance');
-    if (!el) return;
-    const target = balance;
-    if (balanceDisplayValue === null) balanceDisplayValue = target;
-    const start = balanceDisplayValue;
-    const startTime = performance.now();
-    const duration = 400;
-
-    if (balanceTickerId) cancelAnimationFrame(balanceTickerId);
-
-    function tick(now) {
-        const t = Math.min(1, (now - startTime) / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
-        balanceDisplayValue = start + (target - start) * eased;
-        el.textContent = balanceDisplayValue.toFixed(2);
-        if (t < 1) {
-            balanceTickerId = requestAnimationFrame(tick);
-        } else {
-            balanceDisplayValue = target;
-            el.textContent = target.toFixed(2);
-            balanceTickerId = null;
-        }
-    }
-    balanceTickerId = requestAnimationFrame(tick);
-
+    document.getElementById('balance').textContent = balance.toFixed(2);
+    
     // Track max balance
     if (balance > achievementStats.maxBalance) {
         achievementStats.maxBalance = balance;
@@ -979,10 +832,6 @@ function showGame(game) {
         const btn2 = document.getElementById('wheel-magnet-btn');
         btn1.style.display = upgrades.rouletteVision > 0 ? 'block' : 'none';
         btn2.style.display = upgrades.rouletteMagnet > 0 ? 'block' : 'none';
-    } else if (game === 'wheel') {
-        setTimeout(() => initWheel(), 100);
-        const magnetBtn = document.getElementById('lucky-wheel-magnet-btn');
-        if (magnetBtn) magnetBtn.style.display = upgrades.rouletteMagnet > 0 ? 'block' : 'none';
     } else if (game === 'stocks') {
         setTimeout(() => {
             initStocks();
@@ -992,12 +841,11 @@ function showGame(game) {
             bullBtn.style.display = upgrades.stocksForceUp > 0 ? 'block' : 'none';
         }, 100);
     } else if (game === 'blackjack') {
-        // Blackjack has no powerup buttons in the panel — guard in case they
-        // are added later so opening the game never crashes.
+        createTowerGrid();
         const btn1 = document.getElementById('card-peek-btn');
         const btn2 = document.getElementById('blackjack-counter-btn');
-        if (btn1) btn1.style.display = upgrades.blackjackPeek > 0 ? 'block' : 'none';
-        if (btn2) btn2.style.display = upgrades.blackjackCounter > 0 ? 'block' : 'none';
+        btn1.style.display = upgrades.blackjackPeek > 0 ? 'block' : 'none';
+        btn2.style.display = upgrades.blackjackCounter > 0 ? 'block' : 'none';
     } else if (game === 'tower') {
         createTowerGrid();
         const btn1 = document.getElementById('tower-shield-btn');
@@ -1044,51 +892,6 @@ function updateDiceStats() {
 
 document.getElementById('dice-target').addEventListener('input', updateDiceStats);
 updateDiceStats();
-
-// Custom dice slider: drives the hidden native input so all game logic stays intact
-(function initDiceSlider() {
-    const slider = document.getElementById('dice-slider');
-    if (!slider) return;
-    const thumb = document.getElementById('dice-slider-thumb');
-    const fill = document.getElementById('dice-slider-fill');
-    const input = document.getElementById('dice-target');
-    let dragging = false;
-
-    const pctFor = (val) => ((val - 2) / 96) * 100;
-
-    function setFromClientX(clientX) {
-        const rect = slider.getBoundingClientRect();
-        let pct = (clientX - rect.left) / rect.width;
-        pct = Math.max(0, Math.min(1, pct));
-        const val = Math.round(2 + pct * 96); // min 2, max 98, step 1
-        input.value = val;
-        thumb.style.left = pctFor(val) + '%';
-        fill.style.width = pctFor(val) + '%';
-        updateDiceStats();
-    }
-
-    function syncFromInput() {
-        const val = parseFloat(input.value) || 50;
-        thumb.style.left = pctFor(val) + '%';
-        fill.style.width = pctFor(val) + '%';
-    }
-
-    slider.addEventListener('pointerdown', (e) => {
-        dragging = true;
-        try { slider.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
-        setFromClientX(e.clientX);
-    });
-    slider.addEventListener('pointermove', (e) => {
-        if (dragging) setFromClientX(e.clientX);
-    });
-    const endDrag = (e) => {
-        dragging = false;
-        try { slider.releasePointerCapture(e.pointerId); } catch (err) { /* ok */ }
-    };
-    slider.addEventListener('pointerup', endDrag);
-    slider.addEventListener('pointercancel', endDrag);
-    syncFromInput();
-})();
 
 let diceRolling = false;
 
@@ -1190,230 +993,51 @@ function playDice() {
 let plinkoCanvas, plinkoCtx;
 let plinkoActive = false;
 let plinkoAnimationFrame = null;
-let plinkoBalls = [];
-let plinkoPegs = [];
-let plinkoBonusSlot = -1;
 const plinkoMultipliers = {
-    low: [1.1, 1.0, 0.9, 0.8, 0.5, 0.8, 0.9, 1.0, 1.1],
-    medium: [1.5, 1.2, 1.0, 0.7, 0.3, 0.7, 1.0, 1.2, 1.5],
-    high: [1.8, 1.3, 0.9, 0.5, 0.2, 0.5, 0.9, 1.3, 1.8]
+    low: [1.3, 1.2, 1.1, 1, 0.9, 1, 1.1, 1.2, 1.3],
+    medium: [2.2, 1.8, 1.4, 1.1, 0.7, 1.1, 1.4, 1.8, 2.2],
+    high: [2.8, 2.2, 1.5, 0.9, 0.4, 0.9, 1.5, 2.2, 2.8]
 };
-const PLINKO_ROWS = 12;
-const PLINKO_SPACING = 45;
-const PLINKO_OFFSET_Y = 44;
-const PLINKO_PEG_RADIUS = 5;
-const PLINKO_BALL_RADIUS = 8;
-
-function buildPlinkoPegs() {
-    plinkoPegs = [];
-    const offsetX = plinkoCanvas.width / 2;
-    for (let row = 0; row < PLINKO_ROWS; row++) {
-        const pegsInRow = row + 3;
-        for (let col = 0; col < pegsInRow; col++) {
-            const x = offsetX - ((pegsInRow - 1) * PLINKO_SPACING / 2) + (col * PLINKO_SPACING);
-            const y = PLINKO_OFFSET_Y + row * PLINKO_SPACING;
-            plinkoPegs.push({ x, y, lastHit: 0 });
-        }
-    }
-}
 
 function initPlinko() {
     plinkoCanvas = document.getElementById('plinko-canvas');
     if (!plinkoCanvas) return;
-
+    
     plinkoCtx = plinkoCanvas.getContext('2d');
-    buildPlinkoPegs();
+    drawPlinkoBoard();
     updatePlinkoMultipliers();
-
-    function loop() {
-        // Step physics + render every frame while balls exist
-        if (plinkoBalls.length > 0) {
-            stepPlinkoPhysics();
-            drawPlinkoBoard();
-        } else {
+    
+    // Start continuous redraw loop for multiple balls
+    function continuousRedraw() {
+        if (plinkoActive) {
             drawPlinkoBoard();
         }
-        plinkoAnimationFrame = requestAnimationFrame(loop);
+        plinkoAnimationFrame = requestAnimationFrame(continuousRedraw);
     }
-    loop();
+    continuousRedraw();
 }
 
 function drawPlinkoBoard() {
     if (!plinkoCanvas || !plinkoCtx) return;
-    const ctx = plinkoCtx;
-    const w = plinkoCanvas.width, h = plinkoCanvas.height;
-
-    ctx.clearRect(0, 0, w, h);
-
-    // Background
-    const bg = ctx.createLinearGradient(0, 0, 0, h);
-    bg.addColorStop(0, '#14242f');
-    bg.addColorStop(1, '#0c1a24');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, w, h);
-
-    // Slot dividers + landing zone
-    const totalSlots = 9;
-    ctx.strokeStyle = 'rgba(85, 107, 124, 0.25)';
-    ctx.lineWidth = 1;
-    for (let i = 1; i < totalSlots; i++) {
-        const x = (w / totalSlots) * i;
-        ctx.beginPath();
-        ctx.moveTo(x, h - 52);
-        ctx.lineTo(x, h);
-        ctx.stroke();
-    }
-    ctx.fillStyle = 'rgba(85, 107, 124, 0.3)';
-    ctx.fillRect(0, h - 52, w, 2);
-
-    // Flashing bonus slot highlight (one random slot per game)
-    if (plinkoBonusSlot >= 0) {
-        const sx = (w / totalSlots) * plinkoBonusSlot;
-        const flash = 0.4 + 0.3 * Math.sin(Date.now() / 150);
-        ctx.save();
-        ctx.strokeStyle = `rgba(255, 200, 0, ${flash})`;
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = `rgba(255, 200, 0, ${flash})`;
-        ctx.strokeRect(sx + 3, h - 50, w / totalSlots - 6, 47);
-        ctx.font = 'bold 11px Arial';
-        ctx.fillStyle = `rgba(255, 215, 0, ${0.7 + 0.3 * Math.sin(Date.now() / 150)})`;
-        ctx.textAlign = 'center';
-        ctx.fillText('2x BONUS', sx + w / totalSlots / 2, h - 8);
-        ctx.restore();
-    }
-
-    // Pegs: two-tone with highlight
-    plinkoPegs.forEach(peg => {
-        ctx.fillStyle = '#3d5a6b';
-        ctx.beginPath();
-        ctx.arc(peg.x, peg.y, PLINKO_PEG_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#6b8fa3';
-        ctx.beginPath();
-        ctx.arc(peg.x - 1, peg.y - 1, PLINKO_PEG_RADIUS * 0.45, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    // Balls with trails
-    plinkoBalls.forEach(ball => {
-        if (ball.trail) {
-            for (let i = 0; i < ball.trail.length; i++) {
-                const p = ball.trail[i];
-                const alpha = (i / ball.trail.length) * 0.35;
-                ctx.fillStyle = ball.color + Math.round(alpha * 255).toString(16).padStart(2, '0');
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, PLINKO_BALL_RADIUS * (i / ball.trail.length), 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        const grad = ctx.createRadialGradient(ball.x - 2, ball.y - 3, 1, ball.x, ball.y, PLINKO_BALL_RADIUS + 2);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.35, ball.color);
-        grad.addColorStop(1, ball.colorDark);
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = ball.color;
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, PLINKO_BALL_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    });
-}
-
-function stepPlinkoPhysics() {
-    const w = plinkoCanvas.width;
-    const h = plinkoCanvas.height;
-    const totalSlots = 9;
-    const gravity = 0.38;
-    const maxSpeed = 9;
-    const now = Date.now();
-    const multiplierAreaY = h - 52;
-
-    for (let i = plinkoBalls.length - 1; i >= 0; i--) {
-        const ball = plinkoBalls[i];
-        if (ball.spawnDelay > 0) {
-            ball.spawnDelay--;
-            continue;
-        }
-
-        // Gravity
-        ball.vy += gravity;
-
-        // Terminal velocity
-        const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-        if (speed > maxSpeed) {
-            const s = maxSpeed / speed;
-            ball.vx *= s;
-            ball.vy *= s;
-        }
-
-        // Peg collision — real bounce: reflect along the contact normal
-        plinkoPegs.forEach(peg => {
-            const dx = ball.x - peg.x;
-            const dy = ball.y - peg.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const minDist = PLINKO_BALL_RADIUS + PLINKO_PEG_RADIUS;
-            if (dist < minDist && dist > 0.001 && now - peg.lastHit > 70) {
-                peg.lastHit = now;
-                // Push out along normal
-                const nx = dx / dist, ny = dy / dist;
-                ball.x = peg.x + nx * minDist;
-                ball.y = peg.y + ny * minDist;
-                // Reflect velocity with restitution + organic jitter
-                const dot = ball.vx * nx + ball.vy * ny;
-                if (dot < 0) {
-                    ball.vx -= (1.62) * dot * nx;
-                    ball.vy -= (1.62) * dot * ny;
-                    ball.vx += (Math.random() - 0.5) * 1.1;
-                    ball.vy = Math.max(ball.vy, 0.4);
-                    ball.bounceFlash = 6;
-                }
-            }
-        });
-
-        // Wall bounce
-        const margin = PLINKO_BALL_RADIUS + 4;
-        if (ball.x < margin) { ball.x = margin; ball.vx = Math.abs(ball.vx) * 0.62; }
-        if (ball.x > w - margin) { ball.x = w - margin; ball.vx = -Math.abs(ball.vx) * 0.62; }
-
-        // Ball-to-ball collision (gentle separation)
-        for (let j = 0; j < plinkoBalls.length; j++) {
-            if (j === i) continue;
-            const other = plinkoBalls[j];
-            if (other.spawnDelay > 0) continue;
-            const dx = ball.x - other.x;
-            const dy = ball.y - other.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const minDist = PLINKO_BALL_RADIUS * 2;
-            if (dist < minDist && dist > 0.001) {
-                const push = (minDist - dist) / 2;
-                const nx = dx / dist, ny = dy / dist;
-                ball.x += nx * push; ball.y += ny * push;
-                other.x -= nx * push; other.y -= ny * push;
-            }
-        }
-
-        // Integrate
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-        ball.vx *= 0.985;
-
-        // Horizontal damping so the ball settles instead of drifting
-        if (Math.abs(ball.vx) < 0.05) ball.vx = 0;
-
-        // Trail
-        if (ball.bounceFlash !== undefined && ball.bounceFlash > 0) ball.bounceFlash--;
-        ball.trail.push({ x: ball.x, y: ball.y });
-        if (ball.trail.length > 12) ball.trail.shift();
-
-        // Landed?
-        if (ball.y >= multiplierAreaY) {
-            const slot = Math.max(0, Math.min(Math.floor((ball.x / w) * totalSlots), totalSlots - 1));
-            ball.slot = slot;
-            ball.landed = true;
-            plinkoBalls.splice(i, 1);
-            onPlinkoBallLanded(ball);
+    
+    const rows = 12;
+    const pegRadius = 5;
+    const spacing = 45;
+    const offsetX = plinkoCanvas.width / 2;
+    const offsetY = 40;
+    
+    plinkoCtx.clearRect(0, 0, plinkoCanvas.width, plinkoCanvas.height);
+    plinkoCtx.fillStyle = '#556b7c';
+    
+    for (let row = 0; row < rows; row++) {
+        const pegsInRow = row + 3;
+        for (let col = 0; col < pegsInRow; col++) {
+            const x = offsetX - ((pegsInRow - 1) * spacing / 2) + (col * spacing);
+            const y = offsetY + row * spacing;
+            
+            plinkoCtx.beginPath();
+            plinkoCtx.arc(x, y, pegRadius, 0, Math.PI * 2);
+            plinkoCtx.fill();
         }
     }
 }
@@ -1422,18 +1046,18 @@ function updatePlinkoMultipliers() {
     const risk = document.getElementById('plinko-risk').value;
     const multipliers = plinkoMultipliers[risk];
     const container = document.getElementById('plinko-multipliers');
-
+    
     container.innerHTML = '';
     multipliers.forEach(mult => {
         const div = document.createElement('div');
         div.className = 'plinko-multiplier';
         div.textContent = mult + 'x';
-
+        
         if (mult >= 5) div.style.background = '#ff4757';
         else if (mult >= 2) div.style.background = '#ffa502';
         else if (mult >= 1) div.style.background = '#00e701';
         else div.style.background = '#556b7c';
-
+        
         div.style.color = '#fff';
         container.appendChild(div);
     });
@@ -1465,84 +1089,171 @@ function playPlinko() {
     trackBet('plinko', totalBet);
     updateBalance();
     plinkoActive = true;
-    plinkoBalls = [];
 
-    const multipliers = plinkoMultipliers[document.getElementById('plinko-risk').value];
-    // Random bonus slot for this game — doubles whatever lands there
-    plinkoBonusSlot = Math.floor(Math.random() * multipliers.length);
-    document.querySelectorAll('.plinko-multiplier').forEach((el, i) => {
-        el.classList.toggle('plinko-bonus', i === plinkoBonusSlot);
-    });
-    window.__plinkoGame = { totalWin: 0, ballsFinished: 0, numBalls, totalBet };
+    const risk = document.getElementById('plinko-risk').value;
+    const multipliers = plinkoMultipliers[risk];
 
+    let totalWin = 0;
+    let ballsFinished = 0;
+
+    // Drop all balls simultaneously with slight offset
     for (let i = 0; i < numBalls; i++) {
-        const hue = (i * 55 + Math.floor(Math.random() * 30)) % 360;
-        const dropX = plinkoCanvas.width / 2 + (Math.random() - 0.5) * 14;
-        plinkoBalls.push({
-            x: dropX,
-            y: PLINKO_OFFSET_Y - 24,
-            vx: (Math.random() - 0.5) * 0.8,
-            vy: 0.6 + Math.random() * 0.4,
-            bet: betAmount,
-            multipliers,
-            color: `hsl(${hue}, 100%, 60%)`,
-            colorDark: `hsl(${hue}, 100%, 42%)`,
-            trail: [],
-            spawnDelay: i * 14,
-            landed: false,
-            slot: 0
-        });
+        const landingSlot = Math.floor(Math.random() * multipliers.length);
+        const multiplier = multipliers[landingSlot];
+        const winAmount = betAmount * multiplier;
+
+        // Add slight delay between ball drops to prevent exact overlap
+        setTimeout(() => {
+            animatePlinko(landingSlot, multipliers.length, i * 50, () => {
+                totalWin += winAmount;
+                ballsFinished++;
+
+                // Check if all balls are done
+                if (ballsFinished >= numBalls) {
+                    balance += totalWin;
+                    trackResult('plinko', totalBet, totalWin);
+                    playWinSound(totalWin);
+                    updateBalance();
+                    plinkoActive = false;
+
+                    const profit = totalWin - totalBet;
+                    if (profit > 0) {
+                        showToast(`Total won: ${totalWin.toFixed(2)} (Profit: +${profit.toFixed(2)})`, 'success');
+                    } else {
+                        showToast(`Total won: ${totalWin.toFixed(2)} (Loss: ${Math.abs(profit).toFixed(2)})`, 'error');
+                    }
+                }
+            });
+        }, i * 100);
     }
 }
 
-function onPlinkoBallLanded(ball) {
-    const slot = ball.slot;
-    let multiplier = ball.multipliers[slot];
-    const isBonus = slot === plinkoBonusSlot;
-    if (isBonus) multiplier *= 2;
-    const winAmount = ball.bet * multiplier;
-    const game = window.__plinkoGame;
-    if (game) {
-        game.totalWin += winAmount;
-        game.ballsFinished++;
+function animatePlinko(landingSlot, totalSlots, startOffset, callback) {
+    if (!plinkoCanvas || !plinkoCtx) {
+        callback();
+        return;
     }
 
-    highlightMultiplier(slot, isBonus);
-    if (isBonus) showToast('✨ BONUS SLOT! 2x multiplier!', 'success');
-    playSound(isBonus ? 'jackpot' : 'ding');
+    const rows = 12;
+    const spacing = 45;
+    const offsetX = plinkoCanvas.width / 2;
+    const offsetY = 40;
+    const ballRadius = 8;
+    const pegRadius = 5;
+    const maxSpeed = 6;
 
-    if (game && game.ballsFinished >= game.numBalls) {
-        const totalWin = game.totalWin;
-        balance += totalWin;
-        trackResult('plinko', game.totalBet, totalWin);
-        playWinSound(totalWin);
-        updateBalance();
-        plinkoActive = false;
-        window.__plinkoGame = null;
-        plinkoBonusSlot = -1;
-        document.querySelectorAll('.plinko-multiplier').forEach(el => el.classList.remove('plinko-bonus'));
+    // Add horizontal offset to starting position to prevent collision
+    const horizontalOffset = (startOffset % 5 - 2) * 15; // Spread balls across -30 to +30 pixels
+    let ballX = offsetX + horizontalOffset;
+    let ballY = offsetY - 20 - (startOffset * 0.5); // Slight vertical offset too
+    let velocityX = 0;
+    let velocityY = 0;
 
-        const profit = totalWin - game.totalBet;
-        if (profit > 0) {
-            showToast(`Total won: ${totalWin.toFixed(2)} (Profit: +${profit.toFixed(2)})`, 'success');
-        } else {
-            showToast(`Total won: ${totalWin.toFixed(2)} (Loss: ${Math.abs(profit).toFixed(2)})`, 'error');
+    // Calculate target path
+    const slotWidth = plinkoCanvas.width / totalSlots;
+    const targetX = (landingSlot + 0.5) * slotWidth;
+
+    // Get peg positions
+    const pegs = [];
+    for (let row = 0; row < rows; row++) {
+        const pegsInRow = row + 3;
+        for (let col = 0; col < pegsInRow; col++) {
+            const x = offsetX - ((pegsInRow - 1) * spacing / 2) + (col * spacing);
+            const y = offsetY + row * spacing;
+            pegs.push({x, y, row});
         }
     }
+
+    let lastBounce = 0;
+    const multiplierAreaY = plinkoCanvas.height - 50;
+
+    // Generate unique color for this ball
+    const hue = (startOffset * 40) % 360;
+    const ballColor = `hsl(${hue}, 100%, 50%)`;
+
+    function animate() {
+        // Don't clear the board - let multiple balls draw on same canvas
+
+        // Physics
+        velocityY += 0.4;
+
+        // Limit maximum speed
+        const currentSpeed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+        if (currentSpeed > maxSpeed) {
+            const scale = maxSpeed / currentSpeed;
+            velocityX *= scale;
+            velocityY *= scale;
+        }
+
+        // Check collision with pegs
+        pegs.forEach(peg => {
+            const dx = ballX - peg.x;
+            const dy = ballY - peg.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < ballRadius + pegRadius + 2) {
+                const now = Date.now();
+                if (now - lastBounce > 50) {
+                    lastBounce = now;
+
+                    const bounceDirection = Math.random() < 0.5 ? -1 : 1;
+                    velocityX = bounceDirection * 2.2;
+                    velocityY = Math.abs(velocityY) * 0.65;
+
+                    const toTarget = targetX - ballX;
+                    velocityX += toTarget * 0.015;
+                }
+            }
+        });
+
+        // Apply velocity
+        ballX += velocityX;
+        ballY += velocityY;
+
+        // Damping
+        velocityX *= 0.95;
+
+        // Bounds
+        ballX = Math.max(50, Math.min(plinkoCanvas.width - 50, ballX));
+
+        // Ensure ball keeps moving down if stuck
+        if (Math.abs(velocityY) < 0.5 && ballY < multiplierAreaY - 20) {
+            velocityY = 1;
+        }
+
+        // Draw ball with unique color
+        plinkoCtx.shadowBlur = 15;
+        plinkoCtx.shadowColor = ballColor;
+        plinkoCtx.fillStyle = ballColor;
+        plinkoCtx.beginPath();
+        plinkoCtx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+        plinkoCtx.fill();
+        plinkoCtx.shadowBlur = 0;
+
+        // Only count as finished when ball goes well below the multiplier area
+        if (ballY < multiplierAreaY + 20) {
+            requestAnimationFrame(animate);
+        } else {
+            // Determine final slot based on X position
+            const finalSlot = Math.floor((ballX / plinkoCanvas.width) * totalSlots);
+            const clampedSlot = Math.max(0, Math.min(finalSlot, totalSlots - 1));
+            highlightMultiplier(clampedSlot);
+
+            callback();
+        }
+    }
+
+    animate();
 }
 
-function highlightMultiplier(slotIndex, isBonus) {
+function highlightMultiplier(slotIndex) {
     const multipliers = document.querySelectorAll('.plinko-multiplier');
     if (multipliers[slotIndex]) {
-        multipliers[slotIndex].style.transform = 'scale(1.3)';
+        multipliers[slotIndex].style.transform = 'scale(1.2)';
         multipliers[slotIndex].style.transition = 'transform 0.3s';
-        if (isBonus) {
-            multipliers[slotIndex].classList.add('bonus-hit');
-            setTimeout(() => multipliers[slotIndex].classList.remove('bonus-hit'), 900);
-        }
         setTimeout(() => {
             multipliers[slotIndex].style.transform = 'scale(1)';
-        }, 600);
+        }, 500);
     }
 }
 
@@ -1638,16 +1349,6 @@ function revealTile(index) {
     }
 }
 
-// Fair mines multiplier: product of (remaining tiles / remaining safe tiles)
-// for each revealed gem, with a ~2% house edge applied on top.
-function getMinesMultiplier(revealed, minesCount) {
-    let multiplier = 1;
-    for (let i = 0; i < revealed; i++) {
-        multiplier *= (25 - i) / (25 - i - minesCount);
-    }
-    return multiplier * 0.98;
-}
-
 function updateMinesProfit() {
     const betAmount = parseFloat(document.getElementById('mines-bet').value);
     const minesCount = parseInt(document.getElementById('mines-count').value);
@@ -1657,7 +1358,13 @@ function updateMinesProfit() {
         return;
     }
     
-    const multiplier = getMinesMultiplier(minesRevealed, minesCount);
+    // Better multiplier based on mine count
+    const baseMultiplier = 1.08 + (minesCount * 0.01); // More mines = better multiplier
+    let multiplier = 1;
+    for (let i = 0; i < minesRevealed; i++) {
+        multiplier *= baseMultiplier;
+    }
+    
     const winAmount = betAmount * multiplier;
     const profit = winAmount - betAmount;
     document.getElementById('mines-profit').textContent = `$${profit.toFixed(2)}`;
@@ -1689,7 +1396,11 @@ function endMinesGame(won) {
     });
 
     if (won && minesRevealed > 0) {
-        const multiplier = getMinesMultiplier(minesRevealed, minesCount);
+        const baseMultiplier = 1.08 + (minesCount * 0.01);
+        let multiplier = 1;
+        for (let i = 0; i < minesRevealed; i++) {
+            multiplier *= baseMultiplier;
+        }
         const winAmount = betAmount * multiplier;
         balance += winAmount;
         trackResult('mines', betAmount, winAmount);
@@ -1759,32 +1470,15 @@ function playLimbo() {
 
     const resultDisplay = document.getElementById('limbo-result');
     const statusDisplay = document.getElementById('limbo-status');
-    const rocket = document.getElementById('limbo-rocket');
-    const container = document.getElementById('limbo-rocket-container');
-    const containerHeight = container ? container.offsetHeight : 180;
-
-    // Reset rocket
-    if (rocket) {
-        rocket.className = 'limbo-rocket launching';
-        rocket.style.bottom = '10px';
-        rocket.style.opacity = '1';
-    }
 
     // Quick animate counting up
     let current = 1.00;
-    const increment = result / 20;
+    const increment = result / 20; // Faster animation
     let steps = 0;
 
     const interval = setInterval(() => {
         current += increment;
         steps++;
-
-        // Animate rocket rising proportionally
-        if (rocket && container) {
-            const progress = steps / 20;
-            const maxRise = containerHeight - 70;
-            rocket.style.bottom = (10 + maxRise * progress) + 'px';
-        }
 
         if (current >= result || steps >= 20) {
             current = result;
@@ -1800,7 +1494,6 @@ function playLimbo() {
                 statusDisplay.textContent = `Won ${winAmount.toFixed(2)}!`;
                 statusDisplay.style.color = '#00e701';
                 showToast(`Won ${winAmount.toFixed(2)}! (${targetMultiplier.toFixed(2)}x)`, 'success');
-                if (rocket) rocket.className = 'limbo-rocket win-land';
             } else {
                 trackResult('limbo', betAmount, 0);
                 playSound('lose');
@@ -1809,28 +1502,17 @@ function playLimbo() {
                 statusDisplay.textContent = `Lost ${betAmount.toFixed(2)}`;
                 statusDisplay.style.color = '#ff4757';
                 showToast(`Lost ${betAmount.toFixed(2)} - Result: ${result}x`, 'error');
-                if (rocket) rocket.className = 'limbo-rocket crash';
 
                 setTimeout(() => {
                     resultDisplay.style.textShadow = 'none';
-                    // Reset rocket after crash
-                    if (rocket) {
-                        rocket.style.opacity = '1';
-                        rocket.style.bottom = '10px';
-                        rocket.className = 'limbo-rocket';
-                    }
-                }, 1000);
+                }, 2000);
             }
             updateBalance();
 
+            // Release cooldown after animation completes
             setTimeout(() => {
                 limboOnCooldown = false;
-                if (rocket) {
-                    rocket.style.bottom = '10px';
-                    rocket.className = 'limbo-rocket';
-                    rocket.style.opacity = '1';
-                }
-            }, 800);
+            }, 500);
         }
         resultDisplay.textContent = current.toFixed(2) + 'x';
     }, 30);
@@ -1845,44 +1527,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStatsDisplay();
     updateMiniGraph();
 });
-
-// Apply saved theme + settings on load
-document.addEventListener('DOMContentLoaded', () => {
-    applyTheme(localStorage.getItem('pg-theme') || 'classic');
-    soundMuted = localStorage.getItem('pg-sound-muted') === '1';
-    animationsEnabled = localStorage.getItem('pg-animations') !== '0';
-    if (document.getElementById('dartboard-canvas')) initDartboard();
-});
-
-// QOL: quick-bet buttons (½ / 2× / Max) for every game's bet input
-function addQuickBetButtons() {
-    document.querySelectorAll('.game-panel .game-controls input[type="number"][id$="-bet"]').forEach(input => {
-        if (input.dataset.quickBet) return;
-        input.dataset.quickBet = '1';
-        const row = document.createElement('div');
-        row.className = 'quick-bet-row';
-        [['½', 0.5], ['2×', 2], ['Max', 'max']].forEach(([label, factor]) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'quick-bet-btn';
-            btn.textContent = label;
-            btn.onclick = () => {
-                const step = parseFloat(input.step) || 0.01;
-                if (factor === 'max') {
-                    input.value = Math.max(step, Math.floor((balance / step) * 100) / 100).toFixed(2);
-                } else {
-                    const cur = parseFloat(input.value) || 0;
-                    input.value = Math.max(step, +(cur * factor).toFixed(2));
-                }
-                input.focus();
-            };
-            row.appendChild(btn);
-        });
-        input.parentElement.appendChild(row);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', addQuickBetButtons);
 
 // Add click sound to all buttons
 document.addEventListener('DOMContentLoaded', () => {
@@ -1915,7 +1559,6 @@ let crashMultiplier = 1.00;
 let crashBetAmount = 0;
 let crashPoint = 0;
 let crashHistory = [];
-let crashBurstStart = 0;
 
 function initCrash() {
     crashCanvas = document.getElementById('crash-canvas');
@@ -1988,30 +1631,11 @@ function drawCrashGraph() {
         ctx.closePath();
         ctx.fill();
 
-        // Helper: convert a history index to canvas x/y
-        const lineColor = crashed ? '#ff4757' : '#00e701';
-        const glowColor = crashed ? 'rgba(255, 71, 87, 0.35)' : 'rgba(0, 231, 1, 0.35)';
-
-        // Glow trail (thick, translucent)
-        ctx.strokeStyle = glowColor;
-        ctx.lineWidth = 14;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        displayHistory.forEach((mult, i) => {
-            const x = padding + (i / Math.max(displayHistory.length - 1, 1)) * graphWidth;
-            const normalizedMult = Math.min((mult - 1) / (maxMult - 1), 1);
-            const y = (height - padding) - (normalizedMult * graphHeight);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        if (crashed) ctx.lineTo(padding + graphWidth, height - padding);
-        ctx.stroke();
-
-        // Bright core line
-        ctx.strokeStyle = lineColor;
+        // Draw the line
+        ctx.strokeStyle = crashed ? '#ff4757' : '#00e701';
         ctx.lineWidth = 4;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = lineColor;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = crashed ? '#ff4757' : '#00e701';
         ctx.beginPath();
         displayHistory.forEach((mult, i) => {
             const x = padding + (i / Math.max(displayHistory.length - 1, 1)) * graphWidth;
@@ -2020,62 +1644,31 @@ function drawCrashGraph() {
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
-        if (crashed) ctx.lineTo(padding + graphWidth, height - padding);
+
+        // If crashed, draw line down
+        if (crashed) {
+            const lastX = padding + graphWidth;
+            ctx.lineTo(lastX, height - padding);
+        }
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Pulsing head dot while flying
+        // Draw rocket at the end of line if active
         if (crashActive && displayHistory.length > 0) {
             const lastMult = displayHistory[displayHistory.length - 1];
-            const hx = padding + ((displayHistory.length - 1) / Math.max(displayHistory.length - 1, 1)) * graphWidth;
+            const x = padding + ((displayHistory.length - 1) / Math.max(displayHistory.length - 1, 1)) * graphWidth;
             const normalizedMult = Math.min((lastMult - 1) / (maxMult - 1), 1);
-            const hy = (height - padding) - (normalizedMult * graphHeight);
+            const y = (height - padding) - (normalizedMult * graphHeight);
 
-            const pulse = 5 + 3 * Math.sin(Date.now() / 120);
-            const headGrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, pulse * 3);
-            headGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-            headGrad.addColorStop(0.4, lineColor);
-            headGrad.addColorStop(1, 'rgba(0, 231, 1, 0)');
-            ctx.fillStyle = headGrad;
-            ctx.beginPath();
-            ctx.arc(hx, hy, pulse * 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Current multiplier pill at the head
-            ctx.font = 'bold 14px Arial';
-            ctx.fillStyle = lineColor;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = lineColor;
-            ctx.fillText(lastMult.toFixed(2) + 'x', Math.min(hx + 14, padding + graphWidth - 52), hy - 10);
-            ctx.shadowBlur = 0;
+            // Draw rocket emoji
+            ctx.font = '24px Arial';
+            ctx.fillText('🚀', x - 12, y + 8);
         }
 
-        // Expanding crash burst ring
-        if (crashed && crashBurstStart) {
-            const elapsed = Date.now() - crashBurstStart;
-            const progress = Math.min(elapsed / 800, 1);
-            const cx = padding + graphWidth;
-            const cy = height - padding;
-            ctx.strokeStyle = `rgba(255, 71, 87, ${0.9 * (1 - progress)})`;
-            ctx.lineWidth = 4 * (1 - progress) + 1;
-            ctx.beginPath();
-            ctx.arc(cx, cy, progress * 90, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.fillStyle = `rgba(255, 71, 87, ${0.25 * (1 - progress)})`;
-            ctx.beginPath();
-            ctx.arc(cx, cy, progress * 90, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // Max multiplier label
-        ctx.fillStyle = crashed ? '#ff4757' : '#00e701';
-        ctx.font = 'bold 13px Arial';
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = lineColor;
-        ctx.fillText(maxMult.toFixed(2) + 'x', 5, padding + 12);
-        ctx.shadowBlur = 0;
+        // Draw max multiplier label
         ctx.fillStyle = '#556b7c';
         ctx.font = '12px Arial';
+        ctx.fillText(maxMult.toFixed(2) + 'x', 5, padding + 12);
         ctx.fillText('1.00x', 5, height - padding - 5);
     }
 }
@@ -2130,11 +1723,9 @@ function animateCrash() {
             clearInterval(interval);
         } else if (crashMultiplier >= crashPoint) {
             crashActive = false;
-            crashBurstStart = Date.now();
             trackResult('crash', crashBetAmount, 0);
             display.style.color = '#ff4757';
-            display.textContent = '💥 CRASHED!';
-            display.classList.add('crash-pop');
+            display.textContent = 'CRASHED!';
             playSound('lose');
             showToast(`Crashed at ${crashMultiplier.toFixed(2)}x - Lost ${crashBetAmount.toFixed(2)}`, 'error');
             document.getElementById('crash-bet-btn').style.display = 'block';
@@ -2143,8 +1734,6 @@ function animateCrash() {
             setTimeout(() => {
                 display.style.color = '#00e701';
                 display.textContent = '1.00x';
-                display.classList.remove('crash-pop');
-                crashBurstStart = 0;
                 crashHistory = [];
                 drawCrashGraph();
             }, 2000);
@@ -2168,44 +1757,13 @@ function crashCashout() {
 }
 
 // ===== WHEEL GAME =====
-// Balanced wheels (all ~94-100% RTP):
-//   low    = safe, mostly small returns
-//   medium = some losses, bigger hits
-//   high   = jackpot variance
 const wheelSegments = {
-    low: [0.5, 1, 1.5, 1, 0.5, 2, 1, 0.5],
-    medium: [0, 1, 0, 2, 0, 3, 0, 1.5],
-    high: [0, 0, 0, 2, 0, 0, 0, 6]
+    low: [1.2, 1.5, 1.2, 1.5, 1.2, 1.5, 2, 1.5],
+    medium: [0, 1.5, 0, 2, 0, 3, 0, 5],
+    high: [0, 0, 0, 2, 0, 0, 0, 10]
 };
-const wheelRiskLabels = { low: 'Low Risk', medium: 'Medium Risk', high: 'High Risk' };
-
-let wheelMagnetActive = false;
-let wheelSpinning = false;
-let wheelRotation = 0; // cumulative rotation in degrees so spins feel continuous
-
-function initWheel() {
-    const container = document.getElementById('wheel-container');
-    if (!container) return;
-    let canvas = document.getElementById('wheel-canvas');
-    if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.id = 'wheel-canvas';
-        container.appendChild(canvas);
-    }
-    const dpr = window.devicePixelRatio || 1;
-    const size = Math.min(container.offsetWidth || 420, 440);
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    canvas.style.width = size + 'px';
-    canvas.style.height = size + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const risk = document.getElementById('wheel-risk').value;
-    drawWheel(ctx, canvas, wheelSegments[risk], wheelRotation);
-}
 
 function playWheel() {
-    if (wheelSpinning) return;
     const betAmount = parseFloat(document.getElementById('wheel-bet').value);
     
     if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
@@ -2214,144 +1772,53 @@ function playWheel() {
     }
     
     balance -= betAmount;
-    trackBet('wheel', betAmount);
     updateBalance();
     
     const risk = document.getElementById('wheel-risk').value;
     const segments = wheelSegments[risk];
-    let winIndex = Math.floor(Math.random() * segments.length);
-    
-    // Wheel magnet forces a winning segment on the next spin
-    if (wheelMagnetActive) {
-        wheelMagnetActive = false;
-        const winners = segments.map((m, i) => ({ m, i })).filter(s => s.m > 0);
-        if (winners.length) {
-            winIndex = winners[Math.floor(Math.random() * winners.length)].i;
-        }
-        showToast('🧲 Magnet pulled you to a win!', 'success');
-    }
-    
+    const winIndex = Math.floor(Math.random() * segments.length);
     const multiplier = segments[winIndex];
     
-    animateWheel(winIndex, risk, () => {
+    animateWheel(winIndex, () => {
         const winAmount = betAmount * multiplier;
         balance += winAmount;
-        trackResult('wheel', betAmount, winAmount);
+        trackResult('roulette', totalBet, winAmount);
         playWinSound(winAmount);
         updateBalance();
         
-        const resultEl = document.getElementById('wheel-result');
         if (multiplier > 0) {
-            resultEl.textContent = '💰 Won $' + winAmount.toFixed(2) + ' (' + multiplier + 'x)!';
-            resultEl.style.color = '#00e701';
-            createParticles('+$' + (winAmount - betAmount).toFixed(2), '#ffc800');
-            if (multiplier >= 3) createConfetti();
-            playSound('ding');
+            showToast(`Won $${winAmount.toFixed(2)}! (${multiplier}x)`, 'success');
         } else {
-            resultEl.textContent = '💥 Landed on 0x — Lost $' + betAmount.toFixed(2);
-            resultEl.style.color = '#ff4757';
-            createParticles('-$' + betAmount.toFixed(2), '#ff4757');
-            playSound('lose');
+            showToast(`Lost $${betAmount.toFixed(2)}`, 'error');
         }
     });
 }
 
-// WebAudio synth sounds for the Lucky Wheel spin (no audio files needed)
-let wheelAudioCtx = null;
-function wheelTickSound() {
-    if (soundMuted) return;
-    try {
-        if (!wheelAudioCtx) wheelAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (wheelAudioCtx.state === 'suspended') wheelAudioCtx.resume();
-        const ctx = wheelAudioCtx;
-        const t = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(1500, t);
-        osc.frequency.exponentialRampToValueAtTime(900, t + 0.035);
-        gain.gain.setValueAtTime(0.045, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-        osc.start(t);
-        osc.stop(t + 0.05);
-    } catch (e) { /* audio unavailable */ }
-}
-
-function wheelWhooshSound() {
-    if (soundMuted) return;
-    try {
-        if (!wheelAudioCtx) wheelAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (wheelAudioCtx.state === 'suspended') wheelAudioCtx.resume();
-        const ctx = wheelAudioCtx;
-        const t = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, t);
-        osc.frequency.exponentialRampToValueAtTime(55, t + 0.7);
-        gain.gain.setValueAtTime(0.06, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
-        osc.start(t);
-        osc.stop(t + 0.75);
-    } catch (e) { /* audio unavailable */ }
-}
-
-function animateWheel(targetIndex, risk, callback) {
+function animateWheel(targetIndex, callback) {
     const canvas = document.getElementById('wheel-canvas');
-    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    const risk = document.getElementById('wheel-risk').value;
     const segments = wheelSegments[risk];
     
-    const btn = document.getElementById('wheel-spin-btn');
-    const resultEl = document.getElementById('wheel-result');
-    if (btn) btn.disabled = true;
-    if (resultEl) {
-        resultEl.textContent = 'Spinning...';
-        resultEl.style.color = '#b1bad3';
-    }
-    wheelSpinning = true;
-    wheelWhooshSound();
-    
-    // Pointer sits at the top (12 o'clock). A segment's center is drawn at
-    // -90deg + i*segAngle + segAngle/2 before rotation; after rotating by
-    // rotation degrees we want that center to arrive back at -90deg.
+    let rotation = 0;
+    // Calculate target rotation to land on the correct segment
+    // Pointer is at top (12 o'clock), so we need to rotate the segment to the top
     const segmentAngle = 360 / segments.length;
-    const baseTarget = 360 - (targetIndex * segmentAngle) - (segmentAngle / 2);
-    const mod360 = x => ((x % 360) + 360) % 360;
-    const delta = mod360(baseTarget - mod360(wheelRotation));
-    const target = wheelRotation + 360 * 5 + delta;
-    
+    const targetRotation = (360 * 5) - (targetIndex * segmentAngle) - (segmentAngle / 2);
     const duration = 3000;
     const startTime = Date.now();
-    const startRotation = wheelRotation;
-    let lastTickIdx = -1;
-    let lastTickTime = 0;
     
     function animate() {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         
-        wheelRotation = startRotation + (target - startRotation) * eased;
-        drawWheel(ctx, canvas, segments, wheelRotation);
-        
-        // Tick like a wheel-of-fortune as the pointer crosses each segment
-        const now = Date.now();
-        const segIdx = Math.floor((((wheelRotation % 360) + 360) % 360) / (360 / segments.length));
-        if (segIdx !== lastTickIdx && now - lastTickTime > 35 && progress < 0.98) {
-            lastTickIdx = segIdx;
-            lastTickTime = now;
-            wheelTickSound();
-        }
+        rotation = eased * targetRotation;
+        drawWheel(ctx, canvas, segments, rotation);
         
         if (progress < 1) {
             requestAnimationFrame(animate);
         } else {
-            wheelRotation = target;
-            wheelSpinning = false;
-            if (btn) btn.disabled = false;
             callback();
         }
     }
@@ -2360,37 +1827,11 @@ function animateWheel(targetIndex, risk, callback) {
 }
 
 function drawWheel(ctx, canvas, segments, rotation) {
-    const size = parseInt(canvas.style.width) || 420;
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size / 2 - 46;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 200;
     
-    ctx.clearRect(0, 0, size, size);
-    
-    // Glowing gold outer rim
-    ctx.save();
-    ctx.shadowBlur = 24;
-    ctx.shadowColor = 'rgba(255, 200, 0, 0.7)';
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 7, 0, Math.PI * 2);
-    const rimGrad = ctx.createRadialGradient(centerX, centerY, radius - 2, centerX, centerY, radius + 12);
-    rimGrad.addColorStop(0, '#8a6d1f');
-    rimGrad.addColorStop(0.55, '#ffd700');
-    rimGrad.addColorStop(1, '#8a6d1f');
-    ctx.fillStyle = rimGrad;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.restore();
-
-    // Soft outer glow ring
-    const glow = ctx.createRadialGradient(centerX, centerY, radius - 6, centerX, centerY, radius + 26);
-    glow.addColorStop(0, 'rgba(255, 215, 0, 0)');
-    glow.addColorStop(0.75, 'rgba(255, 215, 0, 0.18)');
-    glow.addColorStop(1, 'rgba(255, 215, 0, 0)');
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 26, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     const anglePerSegment = (Math.PI * 2) / segments.length;
     
@@ -2403,15 +1844,11 @@ function drawWheel(ctx, canvas, segments, rotation) {
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
         ctx.closePath();
         
-        let fill;
-        if (multiplier === 0) fill = ['#ff4757', '#c22535'];
-        else if (multiplier >= 5) fill = ['#ffd700', '#c9971a'];
-        else if (multiplier >= 2) fill = ['#00e701', '#008f00'];
-        else fill = ['#6b8fa3', '#3d5a6b'];
-        const grad = ctx.createLinearGradient(centerX, centerY, centerX + radius, centerY);
-        grad.addColorStop(0, fill[1]);
-        grad.addColorStop(1, fill[0]);
-        ctx.fillStyle = grad;
+        if (multiplier === 0) ctx.fillStyle = '#ff4757';
+        else if (multiplier >= 5) ctx.fillStyle = '#ffc800';
+        else if (multiplier >= 2) ctx.fillStyle = '#00e701';
+        else ctx.fillStyle = '#556b7c';
+        
         ctx.fill();
         ctx.strokeStyle = '#0f212e';
         ctx.lineWidth = 3;
@@ -2420,38 +1857,20 @@ function drawWheel(ctx, canvas, segments, rotation) {
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + anglePerSegment / 2);
-        ctx.fillStyle = multiplier === 0 ? '#fff' : '#0f212e';
-        ctx.font = 'bold ' + Math.min(24, size * 0.055) + 'px Arial';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(multiplier + 'x', radius * 0.72, 6);
+        ctx.fillText(multiplier + 'x', radius * 0.7, 5);
         ctx.restore();
     });
     
-    // Pointer with glow
-    ctx.save();
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = '#00e701';
+    // Pointer
     ctx.beginPath();
-    ctx.moveTo(centerX, centerY - radius - 12);
-    ctx.lineTo(centerX - 15, centerY - radius - 34);
-    ctx.lineTo(centerX + 15, centerY - radius - 34);
+    ctx.moveTo(centerX, centerY - radius - 20);
+    ctx.lineTo(centerX - 15, centerY - radius - 40);
+    ctx.lineTo(centerX + 15, centerY - radius - 40);
     ctx.closePath();
     ctx.fillStyle = '#00e701';
-    ctx.fill();
-    ctx.strokeStyle = '#0f212e';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.restore();
-
-    // Center hub
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 18, 0, Math.PI * 2);
-    ctx.fillStyle = '#0f212e';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffc800';
     ctx.fill();
 }
 
@@ -2463,16 +1882,6 @@ function selectCoin(side) {
     document.getElementById('heads-btn').classList.remove('active');
     document.getElementById('tails-btn').classList.remove('active');
     document.getElementById(side + '-btn').classList.add('active');
-}
-
-// Landing bounce + glow for the coin after a flip resolves
-function coinLandFx() {
-    const display = document.querySelector('.coin-display');
-    if (!display) return;
-    display.classList.remove('landed');
-    void display.offsetWidth; // restart animation
-    display.classList.add('landed');
-    setTimeout(() => display.classList.remove('landed'), 600);
 }
 
 function playCoinFlip() {
@@ -2499,7 +1908,6 @@ function playCoinFlip() {
     resultDisplay.textContent = '';
 
     setTimeout(() => {
-        coin.classList.add('spinning');
         // Add appropriate animation class
         if (result === 'heads') {
             coin.classList.add('flipping-heads');
@@ -2512,8 +1920,7 @@ function playCoinFlip() {
         resultDisplay.textContent = result.toUpperCase();
 
         // Keep the coin on the final result side
-        coin.classList.remove('flipping-heads', 'flipping-tails', 'spinning');
-        coinLandFx();
+        coin.classList.remove('flipping-heads', 'flipping-tails');
         if (result === 'heads') {
             coin.style.transform = 'rotateY(0deg)';
         } else {
@@ -2580,34 +1987,9 @@ function initRoulette() {
         const numDiv = document.createElement('div');
         numDiv.className = `number-bet ${numData.color}-number`;
         numDiv.textContent = i;
-        numDiv.onclick = () => selectRouletteBet(i, 20);
+        numDiv.onclick = () => selectRouletteBet(i, 36);
         grid.appendChild(numDiv);
     }
-
-    // Build the wheel from the real number array so the colors and order
-    // always match the payout logic (the old hardcoded conic-gradient was
-    // one segment out of phase, so red/black landed on the wrong color).
-    const inner = document.getElementById('roulette-inner');
-    const segAngle = 360 / rouletteNumbers.length;
-    const stops = rouletteNumbers.map((n, i) => {
-        const from = (i * segAngle).toFixed(3);
-        const to = ((i + 1) * segAngle).toFixed(3);
-        const color = n.color === 'red' ? '#ff4757' : n.color === 'black' ? '#2f4553' : '#00e701';
-        return `${color} ${from}deg ${to}deg`;
-    }).join(', ');
-    inner.style.background = `conic-gradient(${stops})`;
-
-    // Draw number labels around the rim, radially like a real wheel
-    inner.querySelectorAll('.roulette-number').forEach(el => el.remove());
-    const R = Math.max(inner.offsetWidth / 2 - 22, 80);
-    rouletteNumbers.forEach((n, i) => {
-        const label = document.createElement('div');
-        label.className = 'roulette-number';
-        label.textContent = n.num;
-        const a = i * segAngle + segAngle / 2;
-        label.style.transform = `rotate(${a}deg) translate(${R}px)`;
-        inner.appendChild(label);
-    });
 }
 
 function selectRouletteBet(bet, multiplier) {
@@ -2731,10 +2113,10 @@ function playRoulette() {
     const centerDisplay = document.getElementById('roulette-center');
     const resultDisplay = document.getElementById('roulette-result');
 
-    // Calculate rotation so the pointer lands dead-center on the result segment
+    // Calculate rotation
     const segmentAngle = 360 / 37;
     const resultIndex = rouletteNumbers.findIndex(n => n.num === result.num);
-    const targetAngle = (360 * 8) + (resultIndex * segmentAngle) + (segmentAngle / 2);
+    const targetAngle = (360 * 8) + (resultIndex * segmentAngle);
 
     // Start sound slightly after animation starts for better sync
     setTimeout(() => playSound('rouletteSpin'), 50);
@@ -2812,10 +2194,9 @@ function playRoulette() {
             } else {
                 // Betting on specific number
                 if (bet === result.num) {
-                    // Exact number hit uses the bet's multiplier (20x for
-                    // numbers, 36x for the zero bet)
+                    // Exact number hit = 4x
                     won = true;
-                    winMultiplier = multiplier;
+                    winMultiplier = 4;
                     betType = 'exact';
                 } else if (surroundingNums.includes(bet)) {
                     // Surrounding number hit = 2x
@@ -2915,7 +2296,7 @@ function toggleKenoTile(number, tile) {
         tile.classList.add('selected');
         playSound('kenoSelect');
     } else {
-        showToast('Maximum 5 numbers can be selected', 'error');
+        showToast('Maximum 3 numbers can be selected', 'error');
     }
     
     document.getElementById('keno-selected').textContent = kenoSelected.length;
@@ -2930,7 +2311,30 @@ function clearKeno() {
     document.getElementById('keno-selected').textContent = '0';
 }
 
-const kenoMultipliers = [0, 0, 2, 5, 12, 35]; // payouts for 0-5 hits
+function playKeno() {
+    if (kenoGameActive) {
+        showToast('Wait for current game to finish', 'error');
+        return;
+    }
+
+    const betAmount = parseFloat(document.getElementById('keno-bet').value);
+
+    if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
+        showToast('Invalid bet amount', 'error');
+        return;
+    }
+
+    if (kenoSelected.length === 0) {
+        showToast('Select at least 1 number', 'error');
+        return;
+    }
+
+    kenoGameActive = true;
+    document.querySelectorAll('.keno-tile').forEach(tile => {
+        tile.classList.remove('selected', 'hit', 'miss');
+    });
+    document.getElementById('keno-selected').textContent = '0';
+}
 
 function playKeno() {
     if (kenoGameActive) {
@@ -2962,58 +2366,35 @@ function playKeno() {
         if (!drawn.includes(num)) drawn.push(num);
     }
 
-    // Staggered reveal: highlight each drawn number in sequence
-    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-    (async () => {
-        document.querySelectorAll('.keno-tile').forEach(tile => {
-            tile.classList.remove('selected', 'hit', 'miss', 'drawing');
-        });
-
-        for (const num of drawn) {
-            const tile = document.querySelector(`.keno-tile[data-number="${num}"]`);
-            if (tile) {
-                tile.classList.add('drawing');
-                playSound('ding');
-            }
-            await sleep(280);
+    let hits = 0;
+    document.querySelectorAll('.keno-tile').forEach(tile => {
+        const num = parseInt(tile.dataset.number);
+        if (drawn.includes(num)) {
+            tile.classList.add('hit');
+            if (kenoSelected.includes(num)) hits++;
+        } else if (kenoSelected.includes(num)) {
+            tile.classList.add('miss');
         }
+    });
 
-        let hits = 0;
-        document.querySelectorAll('.keno-tile').forEach(tile => {
-            const num = parseInt(tile.dataset.number);
-            tile.classList.remove('drawing');
-            if (drawn.includes(num)) {
-                tile.classList.add('hit');
-                if (kenoSelected.includes(num)) hits++;
-            } else if (kenoSelected.includes(num)) {
-                tile.classList.add('miss');
-            }
-        });
+    // Adjusted multipliers for 3 picks max
+    const multipliers = [0, 0, 2, 5];
+    const multiplier = multipliers[hits] || 0;
+    const winAmount = betAmount * multiplier;
 
-        // Re-add selected styling to the player's picks
-        document.querySelectorAll('.keno-tile').forEach(tile => {
-            const num = parseInt(tile.dataset.number);
-            if (kenoSelected.includes(num) && !drawn.includes(num)) tile.classList.add('selected');
-        });
+    balance += winAmount;
+    trackResult('keno', betAmount, winAmount);
+    playWinSound(winAmount);
+    updateBalance();
 
-        const multiplier = kenoMultipliers[hits] || 0;
-        const winAmount = betAmount * multiplier;
+    if (multiplier > 0) {
+        showToast(`${hits} hits! Won ${winAmount.toFixed(2)} (${multiplier}x)`, 'success');
+    } else {
+        playSound('lose');
+        showToast(`${hits} hits - Lost ${betAmount.toFixed(2)}`, 'error');
+    }
 
-        balance += winAmount;
-        trackResult('keno', betAmount, winAmount);
-        playWinSound(winAmount);
-        updateBalance();
-
-        if (multiplier > 0) {
-            showToast(`${hits} hit${hits > 1 ? 's' : ''}! Won ${winAmount.toFixed(2)} (${multiplier}x)`, 'success');
-        } else {
-            playSound('lose');
-            showToast(`${hits} hits - Lost ${betAmount.toFixed(2)}`, 'error');
-        }
-
-        await sleep(3000);
-        clearKeno();
-    })();
+    setTimeout(() => clearKeno(), 3000);
 }
 
 createKenoGrid();
@@ -3486,9 +2867,7 @@ function useLoadedDice() {
     updateBalance();
 
     const chance = 100 - target;
-    // Nerfed: a guaranteed win can't also pay the full odds multiplier.
-    // Loaded Dice now caps the payout at 1.5x regardless of the target.
-    const multiplier = Math.min(98 / chance, 1.5);
+    const multiplier = 98 / chance;
     const roll = target + 0.01; // Guaranteed win
 
     const indicator = document.getElementById('dice-roll-indicator');
@@ -3506,7 +2885,7 @@ function useLoadedDice() {
     numberDisplay.style.textShadow = '0 0 20px #00e701, 0 0 40px #00e701';
     addWinEffect(diceDisplay);
     createParticles('+$' + winAmount.toFixed(2), '#00e701');
-    showToast(`🎲 Loaded Dice! Won $${winAmount.toFixed(2)}! (capped ${multiplier.toFixed(2)}x)`, 'success');
+    showToast(`🎲 Loaded Dice! Won $${winAmount.toFixed(2)}! (${multiplier.toFixed(2)}x)`, 'success');
 
     if (winAmount >= 100) {
         createConfetti();
@@ -4256,8 +3635,9 @@ function useBiasedCoin() {
 
     coin.classList.remove('flipping-heads', 'flipping-tails');
     coin.style.transform = 'rotateY(0deg)';
-    resultDisplay.textContent = '';    setTimeout(() => {
-        coin.classList.add('spinning');
+    resultDisplay.textContent = '';
+
+    setTimeout(() => {
         if (result === 'heads') {
             coin.classList.add('flipping-heads');
         } else {
@@ -4268,11 +3648,7 @@ function useBiasedCoin() {
     setTimeout(() => {
         resultDisplay.textContent = result.toUpperCase();
 
-
-
-
-        coin.classList.remove('flipping-heads', 'flipping-tails', 'spinning');
-        coinLandFx();
+        coin.classList.remove('flipping-heads', 'flipping-tails');
         if (result === 'heads') {
             coin.style.transform = 'rotateY(0deg)';
         } else {
@@ -4416,7 +3792,6 @@ function useWheelMagnet() {
     const displayElement = document.getElementById('upgrade-rouletteMagnet');
     if (displayElement) displayElement.textContent = upgrades.rouletteMagnet;
     if (upgrades.rouletteMagnet === 0) document.getElementById('wheel-magnet-btn').style.display = 'none';
-    wheelMagnetActive = true;
     showToast('🧲 Wheel Magnet active on next spin!', 'info');
 }
 
@@ -4477,15 +3852,13 @@ function useLuckyCoin() {
     resultDisplay.textContent = '';
 
     setTimeout(() => {
-        coin.classList.add('spinning');
         if (result === 'heads') coin.classList.add('flipping-heads');
         else coin.classList.add('flipping-tails');
     }, 10);
 
     setTimeout(() => {
         resultDisplay.textContent = result.toUpperCase();
-        coin.classList.remove('flipping-heads', 'flipping-tails', 'spinning');
-        coinLandFx();
+        coin.classList.remove('flipping-heads', 'flipping-tails');
         if (result === 'heads') coin.style.transform = 'rotateY(0deg)';
         else coin.style.transform = 'rotateY(180deg)';
 
@@ -4612,19 +3985,6 @@ function changeSlotsVariant() {
             }
         }
     }
-}
-
-function pullSlotsLever() {
-    const lever = document.getElementById('slots-lever');
-    if (!lever || lever.classList.contains('pulling')) return;
-    lever.classList.add('pulling');
-    const machine = document.querySelector('.slots-machine');
-    if (machine) machine.classList.add('shake');
-    setTimeout(() => {
-        lever.classList.remove('pulling');
-        if (machine) machine.classList.remove('shake');
-    }, 650);
-    playSlots();
 }
 
 function playSlots() {
@@ -4947,80 +4307,59 @@ function playSlots3x5(betAmount) {
     }
 }
 
-// Standard paylines for a 3x5 grid: 3 rows + 2 diagonal V-lines
-const SLOTS_3X5_PAYLINES = [
-    [[0,0],[0,1],[0,2],[0,3],[0,4]],
-    [[1,0],[1,1],[1,2],[1,3],[1,4]],
-    [[2,0],[2,1],[2,2],[2,3],[2,4]],
-    [[0,0],[1,1],[2,2],[1,3],[0,4]],
-    [[2,0],[1,1],[0,2],[1,3],[2,4]]
-];
-
-function slotsLineMultiplier(symbol, matchCount) {
-    if (symbol === '7️⃣') {
-        if (matchCount === 5) return 50;
-        if (matchCount === 4) return 20;
-        return 10;
-    } else if (symbol === '💎') {
-        if (matchCount === 5) return 25;
-        if (matchCount === 4) return 10;
-        return 5;
-    } else if (symbol === '⭐') {
-        if (matchCount === 5) return 15;
-        if (matchCount === 4) return 6;
-        return 3;
-    } else if (symbol === '🔔') {
-        if (matchCount === 5) return 10;
-        if (matchCount === 4) return 4;
-        return 2;
-    } else if (symbol === '🍒') {
-        if (matchCount === 5) return 8;
-        if (matchCount === 4) return 3;
-        return 1.5;
-    }
-    return 0;
-}
-
 function evaluate3x5Slots(gridResults, betAmount, resultDiv) {
-    // Clear any previous winning highlights
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 5; col++) {
-            const cell = document.getElementById(`slot-reel-${row}-${col}`);
-            if (cell) cell.classList.remove('winning');
-        }
-    }
-
     let totalMultiplier = 0;
     const winningLines = [];
 
-    // Evaluate every payline (3 rows + 2 diagonals)
-    for (const line of SLOTS_3X5_PAYLINES) {
-        const first = gridResults[line[0][0]][line[0][1]];
+    // Check all 3 horizontal paylines (rows)
+    for (let row = 0; row < 3; row++) {
+        const line = gridResults[row];
+        
+        // Check for consecutive matching symbols from left to right
+        const firstSymbol = line[0];
         let matchCount = 1;
-        for (let i = 1; i < line.length; i++) {
-            if (gridResults[line[i][0]][line[i][1]] === first) {
+        
+        // Count consecutive matches from left
+        for (let col = 1; col < 5; col++) {
+            if (line[col] === firstSymbol) {
                 matchCount++;
             } else {
-                break;
+                break; // Stop at first non-match
             }
         }
-
+        
+        // Award based on match count (3, 4, or 5)
         if (matchCount >= 3) {
-            const lineMultiplier = slotsLineMultiplier(first, matchCount);
+            let lineMultiplier = 0;
+            
+            if (firstSymbol === '7️⃣') {
+                if (matchCount === 5) lineMultiplier = 50;
+                else if (matchCount === 4) lineMultiplier = 20;
+                else lineMultiplier = 10;
+            } else if (firstSymbol === '💎') {
+                if (matchCount === 5) lineMultiplier = 25;
+                else if (matchCount === 4) lineMultiplier = 10;
+                else lineMultiplier = 5;
+            } else if (firstSymbol === '⭐') {
+                if (matchCount === 5) lineMultiplier = 15;
+                else if (matchCount === 4) lineMultiplier = 6;
+                else lineMultiplier = 3;
+            } else if (firstSymbol === '🔔') {
+                if (matchCount === 5) lineMultiplier = 10;
+                else if (matchCount === 4) lineMultiplier = 4;
+                else lineMultiplier = 2;
+            } else if (firstSymbol === '🍒') {
+                if (matchCount === 5) lineMultiplier = 8;
+                else if (matchCount === 4) lineMultiplier = 3;
+                else lineMultiplier = 1.5;
+            }
+            
             totalMultiplier += lineMultiplier;
-            winningLines.push({ line, symbol: first, count: matchCount, multiplier: lineMultiplier });
+            winningLines.push({ row, symbol: firstSymbol, count: matchCount, multiplier: lineMultiplier });
         }
     }
 
     if (totalMultiplier > 0) {
-        // Highlight winning cells
-        winningLines.forEach(win => {
-            win.line.slice(0, win.count).forEach(([r, c]) => {
-                const cell = document.getElementById(`slot-reel-${r}-${c}`);
-                if (cell) cell.classList.add('winning');
-            });
-        });
-
         const winAmount = betAmount * totalMultiplier;
         balance += winAmount;
         trackResult('slots', betAmount, winAmount);
@@ -5702,17 +5041,16 @@ function buyUpgrade(upgradeType) {
 
 // ===== GAME SELECTION =====
 function showGameSelection() {
+    console.log('showGameSelection called!');
     const overlay = document.getElementById('game-selection-overlay');
-    if (!overlay) return;
-    overlay.classList.add('active');
-    // Highlight the game currently open
-    document.querySelectorAll('.game-selection-grid .game-card').forEach(card => {
-        const onClick = card.getAttribute('onclick') || '';
-        const match = onClick.match(/selectGameFromGrid\('([^']+)'\)/);
-        card.classList.toggle('current', !!(match && match[1] === currentGame));
-    });
-    const search = document.getElementById('game-search');
-    if (search) { search.value = ''; filterGameGrid(''); }
+    console.log('Overlay element:', overlay);
+    if (overlay) {
+        overlay.classList.add('active');
+        console.log('Active class added, overlay should be visible');
+        console.log('Overlay display:', window.getComputedStyle(overlay).display);
+    } else {
+        console.error('ERROR: game-selection-overlay not found!');
+    }
 }
 
 // Make sure function is globally available
@@ -5725,21 +5063,6 @@ function closeGameSelection() {
 function selectGameFromGrid(game) {
     closeGameSelection();
     showGame(game);
-}
-
-function filterGameGrid(q) {
-    q = (q || '').toLowerCase().trim();
-    // Common synonyms so searches like "poker" find Texas Hold'em
-    const aliases = { poker: 'texas holdem', holdem: 'texas holdem', blackjack: 'black jack 21' };
-    const originalTerms = q.split(/\s+/).filter(Boolean);
-    const aliasTerms = aliases[q] ? aliases[q].split(/\s+/).filter(Boolean) : null;
-    const matchesAll = (name, terms) => terms.every(t => name.includes(t) || name.replace(/[^a-z0-9]/g, '').includes(t));
-    document.querySelectorAll('.game-selection-grid .game-card').forEach(card => {
-        const nameEl = card.querySelector('.game-card-name');
-        const name = (nameEl ? nameEl.textContent : '').toLowerCase();
-        const match = !q || matchesAll(name, originalTerms) || (aliasTerms && matchesAll(name, aliasTerms));
-        card.style.display = match ? '' : 'none';
-    });
 }
 
 // ===== CASE OPENING GAME =====
@@ -5937,7 +5260,6 @@ function openCaseFast(caseType, price, callback) {
         const profitColor = profit > 0 ? '#00e701' : '#ff4757';
 
         resultDiv.innerHTML = `<span style="color: ${profitColor}; font-size: 32px;">${reward.icon} ${reward.name}</span><br><span style="color: ${profitColor};">Won $${reward.value} (${profitText})</span>`;
-        addLightBurst(caseBox, reward.rarity);
 
         // Create item card
         const itemCard = document.createElement('div');
@@ -6364,7 +5686,6 @@ function revealScratchCard() {
     }
 
     setTimeout(() => {
-        const card = document.getElementById('scratch-card');
         if (winMultiplier > 0) {
             const winAmount = scratchPrice * winMultiplier;
             balance += winAmount;
@@ -6372,7 +5693,6 @@ function revealScratchCard() {
             updateBalance();
             playWinSound(winAmount);
             playSound('jackpot');
-            if (card) { card.classList.remove('is-lose'); card.classList.add('is-win'); addLightBurst(card, 'legendary'); }
             resultDiv.textContent = `🎉 Won ${winAmount.toFixed(2)}! (${winMultiplier}x)`;
             resultDiv.style.color = '#00e701';
             showToast(`🎉 Won ${winAmount.toFixed(2)}! (${winMultiplier}x)`, 'success');
@@ -6383,7 +5703,6 @@ function revealScratchCard() {
         } else {
             trackResult('scratch', scratchPrice, 0);
             playSound('lose');
-            if (card) { card.classList.remove('is-win'); card.classList.add('is-lose'); }
             resultDiv.textContent = `No match - Lost ${scratchPrice.toFixed(2)}`;
             resultDiv.style.color = '#ff4757';
             showToast(`No match - Lost ${scratchPrice.toFixed(2)}`, 'error');
@@ -6424,20 +5743,6 @@ function createPackSparkles(element) {
     }
 }
 
-const BURST_COLORS = { common: '#9aa7b5', rare: '#00b4d8', epic: '#a855f7', legendary: '#ffc800', mythic: '#ff2ec4', cosmic: '#00f0ff' };
-
-function addLightBurst(element, rarity) {
-    if (!animationsEnabled || !element) return;
-    const rect = element.getBoundingClientRect();
-    const burst = document.createElement('div');
-    burst.className = 'light-burst';
-    burst.style.left = (rect.left + rect.width / 2) + 'px';
-    burst.style.top = (rect.top + rect.height / 2) + 'px';
-    burst.style.setProperty('--burst-color', BURST_COLORS[rarity] || '#ffc800');
-    document.body.appendChild(burst);
-    setTimeout(() => burst.remove(), 900);
-}
-
 function openPack() {
     if (packsCooldown) {
         showToast('Please wait for current pack to finish opening...', 'error');
@@ -6471,7 +5776,6 @@ function openPack() {
     packBox.className = 'pack-box pack-' + packType;
     createPackSparkles(packBox);
     packBox.classList.add('opening');
-    addLightBurst(packBox, packType);
     playSound('caseUnbox');
 
     setTimeout(function() {
@@ -7059,144 +6363,6 @@ function calculateDiamondsResult(gems, betAmount) {
 
 // ===== DARTS GAME =====
 let dartsCooldown = false;
-// Standard dartboard sector order (clockwise from the top): 20 at 12 o'clock
-const DART_SECTOR_ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
-const DART_CENTER = 225;
-let dartsBestScore = parseInt(localStorage.getItem('pg-darts-best') || '0', 10);
-
-function drawDartboardSectors() {
-    const canvas = document.getElementById('dartboard-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const c = DART_CENTER;
-    const seg = Math.PI / 10; // 18 degrees
-
-    ctx.clearRect(0, 0, 450, 450);
-    // Surround
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, 450, 450);
-
-    // Wedges: alternating black / white singles
-    for (let i = 0; i < 20; i++) {
-        const start = -Math.PI / 2 + i * seg;
-        ctx.beginPath();
-        ctx.moveTo(c, c);
-        ctx.arc(c, c, 225, start, start + seg);
-        ctx.closePath();
-        ctx.fillStyle = i % 2 === 0 ? '#1c1c1c' : '#f5f5f5';
-        ctx.fill();
-    }
-
-    // Color helpers for double/triple rings (alternate red/green)
-    const ringColor = (i, inner) => {
-        if (inner) return (i % 2 === 0) ? '#d32f2f' : '#2e7d32';
-        return (i % 2 === 0) ? '#e53935' : '#388e3c';
-    };
-
-    // Draw rings: double (outer), triple (inner)
-    const rings = [
-        { r0: 210, r1: 225, inner: false },
-        { r0: 132, r1: 150, inner: true }
-    ];
-    for (const ring of rings) {
-        for (let i = 0; i < 20; i++) {
-            const start = -Math.PI / 2 + i * seg;
-            ctx.beginPath();
-            ctx.arc(c, c, ring.r1, start, start + seg);
-            ctx.arc(c, c, ring.r0, start + seg, start, true);
-            ctx.closePath();
-            ctx.fillStyle = ringColor(i, ring.inner);
-            ctx.fill();
-        }
-    }
-
-    // Bulls
-    ctx.beginPath();
-    ctx.arc(c, c, 34, 0, Math.PI * 2);
-    ctx.fillStyle = '#2e7d32';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(c, c, 14, 0, Math.PI * 2);
-    ctx.fillStyle = '#d32f2f';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(c, c, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff';
-    ctx.fill();
-
-    // Gold wire separators
-    ctx.strokeStyle = 'rgba(200, 178, 115, 0.85)';
-    ctx.lineWidth = 1.2;
-    for (let i = 0; i < 20; i++) {
-        const a = -Math.PI / 2 + i * seg;
-        ctx.beginPath();
-        ctx.moveTo(c + Math.cos(a) * 34, c + Math.sin(a) * 34);
-        ctx.lineTo(c + Math.cos(a) * 225, c + Math.sin(a) * 225);
-        ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.arc(c, c, 210, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(c, c, 150, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(c, c, 132, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(c, c, 34, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(c, c, 14, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Sector numbers around the outside
-    ctx.font = 'bold 13px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (let i = 0; i < 20; i++) {
-        const a = -Math.PI / 2 + (i + 0.5) * seg;
-        const nr = 216;
-        ctx.fillStyle = DART_SECTOR_ORDER[i] >= 15 ? '#ffc800' : '#9aa7b5';
-        ctx.fillText(DART_SECTOR_ORDER[i], c + Math.cos(a) * nr, c + Math.sin(a) * nr);
-    }
-
-    // Gold rim
-    ctx.beginPath();
-    ctx.arc(c, c, 224, 0, Math.PI * 2);
-    ctx.strokeStyle = '#c9a227';
-    ctx.lineWidth = 4;
-    ctx.stroke();
-}
-
-function initDartboard() {
-    drawDartboardSectors();
-    const bestEl = document.getElementById('dart-best');
-    if (bestEl) bestEl.textContent = 'BEST SCORE: ' + (dartsBestScore || '--');
-}
-
-// Score a hit at (x, y): returns { score, sector, ring, label }
-function getDartScore(x, y) {
-    const c = DART_CENTER;
-    const dx = x - c, dy = y - c;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const angle = Math.atan2(dy, dx);
-
-    let sectorIdx = Math.floor(((angle + Math.PI / 2) / (Math.PI * 2) * 20 + 20) % 20);
-    const sector = DART_SECTOR_ORDER[sectorIdx];
-
-    let ring = 'miss';
-    let value = 0;
-    if (dist <= 14) { ring = 'inner-bull'; value = 50; }
-    else if (dist <= 34) { ring = 'bull'; value = 25; }
-    else if (dist <= 132) { ring = 'single'; value = sector; }
-    else if (dist <= 150) { ring = 'triple'; value = sector * 3; }
-    else if (dist <= 210) { ring = 'single'; value = sector; }
-    else if (dist <= 225) { ring = 'double'; value = sector * 2; }
-
-    return { score: value, sector, ring };
-}
-
 function throwDart() {
     if (dartsCooldown) { showToast("Please wait...", "error"); return; }
     dartsCooldown = true; setTimeout(() => { dartsCooldown = false; }, 2000);
@@ -7231,64 +6397,33 @@ function throwDart() {
     hitText.textContent = '';
     hitText.className = 'dart-hit-text';
     
-    // Random target — biased toward center on easier difficulties
-    const centerBias = difficulty === 'easy' ? 0.75 : difficulty === 'medium' ? 0.55 : 0.4;
+    // Get random position on dartboard
     const angle = Math.random() * 360;
-    const maxDistance = 225;
-    const distance = Math.pow(Math.random(), centerBias) * maxDistance;
+    const maxDistance = 225; // Radius of dartboard
+    const distance = Math.random() * maxDistance;
     
-    const x = DART_CENTER + distance * Math.cos(angle * Math.PI / 180);
-    const y = DART_CENTER + distance * Math.sin(angle * Math.PI / 180);
+    const x = 225 + distance * Math.cos(angle * Math.PI / 180);
+    const y = 225 + distance * Math.sin(angle * Math.PI / 180);
     
-    // Throw arc: dart flies from the bottom-left corner toward the target
-    const board = document.querySelector('.dartboard-simple');
-    const flight = document.createElement('div');
-    flight.className = 'dart-flight';
-    const sx = 40, sy = 420;
-    flight.style.left = sx + 'px';
-    flight.style.top = sy + 'px';
-    board.appendChild(flight);
-    const dx = x - sx, dy = y - sy;
-    const midX = dx * 0.5, midY = dy * 0.5 - 120;
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            flight.style.transform = `translate(${midX}px, ${midY}px)`;
-        });
-    });
+    // Show dart point
+    const dartSimple = document.getElementById('dart-simple');
+    dartSimple.style.left = x + 'px';
+    dartSimple.style.top = y + 'px';
+    dartSimple.style.display = 'block';
+    
+    // Create impact wave
     setTimeout(() => {
-        flight.style.transform = `translate(${dx}px, ${dy}px)`;
-    }, 240);
-    
-    setTimeout(() => {
-        flight.remove();
-        
-        // Show dart point
-        const dartSimple = document.getElementById('dart-simple');
-        dartSimple.style.left = x + 'px';
-        dartSimple.style.top = y + 'px';
-        dartSimple.style.display = 'block';
-        
         createDartWave(x, y);
         
-        // Score by sector + ring
-        const { score, ring } = getDartScore(x, y);
-        const multiplier = Math.max(0.05, score / 30);
-        const ringName = { 'double': 'DOUBLE', 'triple': 'TRIPLE', 'bull': 'BULL', 'inner-bull': 'INNER BULL', 'single': 'SINGLE' }[ring];
-        
-        // Best score tracking
-        if (score > dartsBestScore) {
-            dartsBestScore = score;
-            localStorage.setItem('pg-darts-best', String(score));
-            const bestEl = document.getElementById('dart-best');
-            if (bestEl) bestEl.textContent = 'BEST SCORE: ' + score;
-        }
+        // Calculate multiplier
+        const multiplier = getDartMultiplier(difficulty, distance, maxDistance);
         
         // Show hit text
         setTimeout(() => {
-            hitText.textContent = score + ' • ' + ringName + ' • ' + multiplier.toFixed(2) + 'x';
+            hitText.textContent = multiplier.toFixed(2) + 'x';
             hitText.className = 'dart-hit-text show';
             
-            if (multiplier >= 2) {
+            if (multiplier >= 10) {
                 hitText.style.color = '#00e701';
                 hitText.style.textShadow = '0 0 40px rgba(0, 231, 1, 1), 0 0 80px rgba(0, 231, 1, 0.8), 0 5px 20px rgba(0, 0, 0, 0.9)';
             } else if (multiplier < 1) {
@@ -7304,7 +6439,7 @@ function throwDart() {
         setTimeout(() => {
             multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
             
-            if (multiplier >= 2) {
+            if (multiplier >= 10) {
                 multiplierDisplay.className = 'multiplier-value-large high-multiplier';
             } else if (multiplier < 1) {
                 multiplierDisplay.className = 'multiplier-value-large low-multiplier';
@@ -7321,21 +6456,20 @@ function throwDart() {
             updateBalance();
             
             const profit = winAmount - betAmount;
-            const resultColor = multiplier >= 2 ? '#00e701' : (multiplier < 1 ? '#ff4757' : '#ffd700');
             
             document.getElementById('darts-result').textContent = 
-                score + ' pts → Won $' + winAmount.toFixed(2) + ' (Profit: $' + profit.toFixed(2) + ')';
-            document.getElementById('darts-result').style.color = resultColor;
+                'Won $' + winAmount.toFixed(2) + ' (Profit: $' + profit.toFixed(2) + ')';
+            document.getElementById('darts-result').style.color = color;
             
-            if (score === 60) {
+            if (multiplier >= 50) {
                 playSound('jackpot');
-                showToast('🎯 TRIPLE 20! ' + multiplier.toFixed(2) + 'x!', 'success');
-            } else if (multiplier >= 2) {
+                showToast('🎯 MASSIVE HIT! ' + multiplier.toFixed(2) + 'x!', 'success');
+            } else if (profit > betAmount * 2) {
                 playSound('cashPayoutLarge');
-                showToast('🎯 ' + ringName + '! ' + score + ' pts (' + multiplier.toFixed(2) + 'x)!', 'success');
+                showToast('🎯 Big Hit! ' + multiplier.toFixed(2) + 'x!', 'success');
             } else if (profit > 0) {
                 playSound('cashPayoutMedium');
-                showToast('🎯 ' + score + ' pts (' + multiplier.toFixed(2) + 'x)', 'success');
+                showToast('🎯 Hit ' + multiplier.toFixed(2) + 'x!', 'success');
             } else {
                 playSound('loose');
             }
@@ -7345,7 +6479,7 @@ function throwDart() {
                 dartSimple.style.display = 'none';
             }, 2000);
         }, 600);
-    }, 460);
+    }, 200);
 }
 
 function createDartWave(x, y) {
@@ -7358,6 +6492,63 @@ function createDartWave(x, y) {
     wave.style.top = y + 'px';
     dartboard.appendChild(wave);
     setTimeout(() => wave.remove(), 1000);
+}
+
+function getDartMultiplier(difficulty, distance, maxDistance) {
+    const distanceRatio = distance / maxDistance;
+    
+    // Bullseye (center) - highest multipliers, smaller zone
+    if (distanceRatio < 0.05) {
+        const bullseyeMultipliers = {
+            easy: [5, 8, 10, 15],
+            medium: [10, 15, 25, 40],
+            hard: [20, 35, 60, 100],
+            expert: [50, 80, 120, 200]
+        };
+        return bullseyeMultipliers[difficulty][Math.floor(Math.random() * bullseyeMultipliers[difficulty].length)];
+    }
+    
+    // Inner ring
+    if (distanceRatio < 0.18) {
+        const innerMultipliers = {
+            easy: [1.5, 2, 2.5, 3],
+            medium: [3, 5, 8, 12],
+            hard: [6, 10, 15, 25],
+            expert: [12, 20, 35, 60]
+        };
+        return innerMultipliers[difficulty][Math.floor(Math.random() * innerMultipliers[difficulty].length)];
+    }
+    
+    // Mid ring
+    if (distanceRatio < 0.45) {
+        const midMultipliers = {
+            easy: [0.5, 0.8, 1, 1.2],
+            medium: [1, 1.5, 2, 3],
+            hard: [2, 4, 6, 10],
+            expert: [4, 8, 15, 25]
+        };
+        return midMultipliers[difficulty][Math.floor(Math.random() * midMultipliers[difficulty].length)];
+    }
+    
+    // Outer mid ring
+    if (distanceRatio < 0.75) {
+        const outerMidMultipliers = {
+            easy: [0.2, 0.3, 0.5, 0.8],
+            medium: [0.3, 0.5, 0.8, 1],
+            hard: [0.3, 0.5, 1, 2],
+            expert: [0.5, 1, 3, 8]
+        };
+        return outerMidMultipliers[difficulty][Math.floor(Math.random() * outerMidMultipliers[difficulty].length)];
+    }
+    
+    // Outer ring - mostly losses
+    const outerMultipliers = {
+        easy: [0.1, 0.2, 0.3, 0.5],
+        medium: [0, 0.1, 0.2, 0.4],
+        hard: [0, 0, 0.1, 0.3],
+        expert: [0, 0, 0, 0.2]
+    };
+    return outerMultipliers[difficulty][Math.floor(Math.random() * outerMultipliers[difficulty].length)];
 }
 
 // ===== CHICKEN GAME =====
@@ -7814,10 +7005,7 @@ let gameStats = {
     baccarat: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
     videopoker: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
     rps: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-    holdem: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-    horse: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-    wheel: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-    solitaire: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] }
+    holdem: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] }
 };
 
 let lastBetAmount = 0;
@@ -8088,10 +7276,7 @@ function resetStats() {
             baccarat: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
             videopoker: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
             rps: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-            holdem: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-            horse: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-            wheel: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] },
-            solitaire: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] }
+            holdem: { totalWagered: 0, totalWon: 0, totalLost: 0, wins: 0, losses: 0, profitHistory: [] }
         };
         updateStatsDisplay();
         updateMiniGraph();
@@ -9148,7 +8333,6 @@ function getRandomCard() {
 // ===== VIDEO POKER GAME =====
 let pokerHand = [];
 let heldCards = [];
-let pokerLockedBet = 0;
 
 function dealVideoPoker() {
     const betAmount = parseFloat(document.getElementById('videopoker-bet').value);
@@ -9158,13 +8342,9 @@ function dealVideoPoker() {
         return;
     }
 
-    pokerLockedBet = betAmount;
     balance -= betAmount;
     trackBet('videopoker', betAmount);
     updateBalance();
-
-    // Lock the bet input so it can't be changed mid-hand
-    document.getElementById('videopoker-bet').disabled = true;
 
     // Deal 5 cards
     pokerHand = [];
@@ -9182,7 +8362,7 @@ function dealVideoPoker() {
 }
 
 function drawVideoPoker() {
-    const betAmount = pokerLockedBet;
+    const betAmount = parseFloat(document.getElementById('videopoker-bet').value);
 
     // Replace non-held cards
     for (let i = 0; i < 5; i++) {
@@ -9194,7 +8374,6 @@ function drawVideoPoker() {
     displayPokerHand();
     document.getElementById('videopoker-draw-btn').style.display = 'none';
     document.getElementById('videopoker-deal-btn').style.display = 'block';
-    document.getElementById('videopoker-bet').disabled = false;
 
     playSound('blackjackCardFlip');
 
@@ -10068,129 +9247,29 @@ function usePacksLegendary() {
 }
 
 
-
-
-
 // ===== HORSE BETTING GAME =====
 const horses = [
-    { name: '⚡ Thunder',      color: '#ffc800' },
-    { name: '🌟 Starlight',    color: '#627eea' },
-    { name: '🔥 Blaze',        color: '#ff4757' },
-    { name: '💨 Windrunner',   color: '#00e701' },
-    { name: '🌙 Moonshot',     color: '#a29bfe' },
-    { name: '🎲 Lucky Hooves', color: '#fd79a8' }
-];
-
-const HORSE_ODDS = 2.0;
-const HORSE_EVENTS = [
-    { name: 'BURST!',   emoji: '💨', duration: 35, mult: 1.8,  color: '#00e701' },
-    { name: 'TRIP!',    emoji: '😵', duration: 30, mult: 0.0,  color: '#ff4757' },
-    { name: 'STUMBLE!', emoji: '😬', duration: 22, mult: 0.3,  color: '#ffc800' },
-    { name: 'TIRED!',   emoji: '😮', duration: 40, mult: 0.5,  color: '#b1bad3' },
-    { name: 'SPRINT!',  emoji: '🚀', duration: 28, mult: 1.6,  color: '#00e701' },
+    { name: '⚡ Thunder', odds: 2.0, speed: 0.9 },
+    { name: '🌟 Starlight', odds: 3.0, speed: 0.75 },
+    { name: '🔥 Blaze', odds: 4.0, speed: 0.65 },
+    { name: '💨 Windrunner', odds: 5.0, speed: 0.55 },
+    { name: '🌙 Moonshot', odds: 8.0, speed: 0.4 },
+    { name: '🎲 Lucky Hooves', odds: 12.0, speed: 0.3 }
 ];
 
 let selectedHorse = null;
 let horseRaceActive = false;
-let horseCooldown = false;
-let cheerCooldown = false;
-let cheerActive = false;
-let cheerMult = 1.0;
-let cheerTicks = 0;
-let horseCanvas = null;
-let horseCtx = null;
-const LANE_H = 80;
-const NAME_W = 160;
-const PADDING = 16;
 
 function initHorseGame() {
-    // Build horse selection buttons
     const sel = document.getElementById('horse-selection');
-    if (sel && sel.children.length === 0) {
-        horses.forEach((h, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'horse-btn';
-            btn.innerHTML = '<span>' + h.name + '</span><span style="color:#ffc800">' + HORSE_ODDS + 'x</span>';
-            btn.onclick = () => selectHorse(i);
-            sel.appendChild(btn);
-        });
-    }
-
-    // Build canvas
-    const container = document.getElementById('race-track');
-    if (!container) return;
-    container.innerHTML = '';
-
-    horseCanvas = document.createElement('canvas');
-    horseCanvas.style.width = '100%';
-    horseCanvas.style.borderRadius = '8px';
-    horseCanvas.style.display = 'block';
-    container.appendChild(horseCanvas);
-
-    // Size canvas after it's in DOM - use devicePixelRatio for crisp rendering
-    requestAnimationFrame(() => {
-        const dpr = window.devicePixelRatio || 1;
-        const w = Math.max(container.offsetWidth, 500);
-        const h = horses.length * LANE_H + PADDING * 2;
-        horseCanvas.width = w * dpr;
-        horseCanvas.height = h * dpr;
-        horseCanvas.style.width = w + 'px';
-        horseCanvas.style.height = h + 'px';
-        horseCtx = horseCanvas.getContext('2d');
-        horseCtx.scale(dpr, dpr);
-        drawRaceIdle();
-    });
-}
-
-function drawRaceIdle() {
-    if (!horseCtx || !horseCanvas) return;
-    const w = parseInt(horseCanvas.style.width) || horseCanvas.width;
-    const ctx = horseCtx;
-    ctx.clearRect(0, 0, w, parseInt(horseCanvas.style.height) || horseCanvas.height);
-
+    if (!sel || sel.children.length > 0) return;
     horses.forEach((h, i) => {
-        const y = PADDING + i * LANE_H;
-        ctx.fillStyle = 'rgba(47,69,83,0.4)';
-        roundRect(ctx, 0, y, w, LANE_H - 6, 10);
-        ctx.fill();
-
-        ctx.fillStyle = h.color;
-        roundRect(ctx, 0, y, 5, LANE_H - 6, 5);
-        ctx.fill();
-
-        ctx.fillStyle = h.color;
-        ctx.font = 'bold 15px sans-serif';
-        ctx.fillText(h.name, 14, y + LANE_H / 2 + 6);
-
-        const tx = NAME_W;
-        const tw = w - NAME_W - PADDING;
-        ctx.fillStyle = 'rgba(255,255,255,0.04)';
-        roundRect(ctx, tx, y + 10, tw, LANE_H - 24, 8);
-        ctx.fill();
-
-        // Finish line
-        for (let fy = y + 10; fy < y + LANE_H - 14; fy += 10) {
-            ctx.fillStyle = fy % 20 === (y + 10) % 20 ? '#fff' : '#333';
-            ctx.fillRect(tx + tw - 8, fy, 8, 10);
-        }
-
-        ctx.font = '28px serif';
-        ctx.fillText('🐎', tx + 6, y + LANE_H / 2 + 10);
+        const btn = document.createElement('button');
+        btn.className = 'horse-btn';
+        btn.innerHTML = `<span>${h.name}</span><span style="color:#ffc800">${h.odds}x</span>`;
+        btn.onclick = () => selectHorse(i);
+        sel.appendChild(btn);
     });
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
 }
 
 function selectHorse(index) {
@@ -10199,24 +9278,10 @@ function selectHorse(index) {
         b.classList.toggle('selected', i === index);
     });
 }
-function cheerHorse() {
-    if (!horseRaceActive) { showToast("Start a race first!", "error"); return; }
-    if (cheerCooldown) { showToast("Already cheered!", "error"); return; }
-    cheerActive = true;
-    cheerMult = 2.5;
-    cheerTicks = 10;
-    cheerCooldown = true;
-    const btn = document.getElementById("horse-cheer-btn");
-    const cdEl = document.getElementById("cheer-cooldown");
-    if (btn) { btn.disabled = true; btn.style.opacity = "0.4"; btn.textContent = "📣 Cheered!"; }
-    if (cdEl) { cdEl.style.display = "block"; }
-    showToast("📣 Your horse got a 0.5s boost!", "success");
-}
 
 
-function startHorseRace() {
-    if (horseRaceActive) { showToast('Race in progress!', 'error'); return; }
-    if (horseCooldown) { showToast('Please wait...', 'error'); return; }
+async function startHorseRace() {
+    if (horseRaceActive) return;
     if (selectedHorse === null) { showToast('Pick a horse first!', 'error'); return; }
 
     const betAmount = parseFloat(document.getElementById('horse-bet').value);
@@ -10224,1705 +9289,99 @@ function startHorseRace() {
         showToast('Invalid bet amount', 'error'); return;
     }
 
-    if (!horseCtx || !horseCanvas) { showToast('Track not ready, try again', 'error'); return; }
-
     balance -= betAmount;
     updateBalance();
     trackBet('horse', betAmount);
     horseRaceActive = true;
-    cheerActive = false; cheerMult = 1.0; cheerTicks = 0; cheerCooldown = false;
-    const cheerBtn = document.getElementById("horse-cheer-btn");
-    if (cheerBtn) { cheerBtn.style.display = "block"; cheerBtn.disabled = false; }
-    const cdEl = document.getElementById("cheer-cooldown");
-    if (cdEl) cdEl.style.display = "none";
-    horseCooldown = true;
 
-    document.getElementById('horse-result').textContent = '🏁 Race in progress...';
-    document.getElementById('horse-result').style.color = '#b1bad3';
+    const track = document.getElementById('race-track');
+    track.innerHTML = '';
+    document.getElementById('horse-result').textContent = '';
 
-    // Use logical (CSS) width, not canvas pixel width
-    const w = parseInt(horseCanvas.style.width) || horseCanvas.width;
-    const trackW = w - NAME_W - PADDING - 20;
-    const winner = Math.floor(Math.random() * horses.length);
-
-    // Per-horse state
-    const positions = horses.map(() => 0);
-    const activeEvents = horses.map(() => null);
-    const eventLabels = horses.map(() => '');
-    const eventColors = horses.map(() => '#fff');
-    const eventTicks = horses.map(() => 0);
-
-    // Schedule events
-    const schedules = horses.map((h, i) => {
-        const s = [];
-        let t = 15 + Math.floor(Math.random() * 20);
-        while (t < 110) {
-            const ev = HORSE_EVENTS[Math.floor(Math.random() * HORSE_EVENTS.length)];
-            const biased = i === winner
-                ? (Math.random() < 0.45 ? HORSE_EVENTS[0] : ev)
-                : (Math.random() < 0.4  ? HORSE_EVENTS[1] : ev);
-            s.push({ tick: t, ev: biased });
-            t += biased.duration + 8 + Math.floor(Math.random() * 15);
-        }
-        return s;
+    // Build lanes
+    const lanes = horses.map((h, i) => {
+        const lane = document.createElement('div');
+        lane.className = 'race-lane';
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'race-lane-name';
+        nameDiv.textContent = h.name;
+        const trackDiv = document.createElement('div');
+        trackDiv.className = 'race-lane-track';
+        trackDiv.id = 'track-' + i;
+        const horseEl = document.createElement('div');
+        horseEl.className = 'race-horse';
+        horseEl.id = 'horse-' + i;
+        horseEl.textContent = '🐎';
+        trackDiv.appendChild(horseEl);
+        lane.appendChild(nameDiv);
+        lane.appendChild(trackDiv);
+        track.appendChild(lane);
+        return lane;
     });
 
-    let tick = 0;
+    // Wait for DOM to render
+    await new Promise(r => setTimeout(r, 80));
+
+    // Determine winner weighted by speed
+    const totalSpeed = horses.reduce((s, h) => s + h.speed, 0);
+    let rand = Math.random() * totalSpeed;
+    let winner = 0;
+    for (let i = 0; i < horses.length; i++) {
+        rand -= horses[i].speed;
+        if (rand <= 0) { winner = i; break; }
+    }
+
+    // Animate race using pixel positions
+    const positions = horses.map(() => 0);
     let finished = false;
-    const MIN_TICKS = 90;
-    const BASE_SPEED = 1.5;
 
     const interval = setInterval(() => {
-        tick++;
-        const ctx = horseCtx;
-        ctx.clearRect(0, 0, w, parseInt(horseCanvas.style.height) || horseCanvas.height);
-
+        let done = false;
         horses.forEach((h, i) => {
-            const y = PADDING + i * LANE_H;
-            const tx = NAME_W;
-            const tw = w - NAME_W - PADDING;
+            const trackEl = document.getElementById('track-' + i);
+            const el = document.getElementById('horse-' + i);
+            if (!trackEl || !el) return;
 
-            // Trigger event
-            const sched = schedules[i];
-            if (sched.length > 0 && tick >= sched[0].tick) {
-                const ev = sched.shift().ev;
-                activeEvents[i] = { ...ev, left: ev.duration };
-                eventLabels[i] = ev.emoji + ' ' + ev.name;
-                eventColors[i] = ev.color;
-                eventTicks[i] = 30; // show label for 30 ticks
-            }
+            const maxPos = trackEl.offsetWidth - 32;
+            let speed = h.speed * (0.7 + Math.random() * 0.6);
+            if (i === winner && positions[i] > maxPos * 0.6) speed *= 1.4;
+            positions[i] = Math.min(positions[i] + speed * 3, maxPos);
+            el.style.left = positions[i] + 'px';
 
-            let mult = 1.0;
-            if (activeEvents[i]) {
-                mult = activeEvents[i].mult;
-                activeEvents[i].left--;
-                if (activeEvents[i].left <= 0) activeEvents[i] = null;
-            }
-            if (eventTicks[i] > 0) eventTicks[i]--;
-
-            // Move horse
-            const cheerBoost = (i === selectedHorse && cheerActive && cheerTicks > 0) ? cheerMult : 1.0;
-            if (i === selectedHorse && cheerTicks > 0) cheerTicks--;
-            if (cheerTicks === 0) cheerActive = false;
-            const speed = BASE_SPEED * mult * cheerBoost * (0.85 + Math.random() * 0.3);
-            positions[i] = Math.min(positions[i] + speed, trackW);
-
-            // Draw lane bg
-            const isWinnerLane = finished && i === winner;
-            const isLoserLane = finished && i !== winner;
-            ctx.fillStyle = isWinnerLane ? 'rgba(0,231,1,0.12)' : isLoserLane ? 'rgba(0,0,0,0.2)' : 'rgba(47,69,83,0.4)';
-            roundRect(ctx, 0, y, w, LANE_H - 6, 10);
-            ctx.fill();
-
-            // Color bar
-            ctx.fillStyle = isLoserLane ? 'rgba(100,100,100,0.4)' : h.color;
-            roundRect(ctx, 0, y, 5, LANE_H - 6, 5);
-            ctx.fill();
-
-            // Name
-            ctx.globalAlpha = isLoserLane ? 0.4 : 1.0;
-            ctx.fillStyle = h.color;
-            ctx.font = 'bold 15px sans-serif';
-            ctx.fillText(h.name, 14, y + LANE_H / 2 + 6);
-
-            // Track bg
-            ctx.fillStyle = 'rgba(255,255,255,0.04)';
-            roundRect(ctx, tx, y + 10, tw - 8, LANE_H - 24, 8);
-            ctx.fill();
-
-            // Finish line
-            for (let fy = y + 10; fy < y + LANE_H - 14; fy += 10) {
-                ctx.fillStyle = fy % 20 === (y + 10) % 20 ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
-                ctx.fillRect(tx + tw - 14, fy, 8, 10);
-            }
-
-            // Horse emoji - bob up/down when moving
-            const bob = mult > 0 ? Math.sin(tick * 0.4 + i) * 4 : 0;
-            ctx.font = '28px serif';
-            ctx.fillText('🐎', tx + 6 + positions[i], y + LANE_H / 2 + 10 + bob);
-
-            // Event label
-            if (eventTicks[i] > 0) {
-                ctx.fillStyle = eventColors[i];
-                ctx.font = 'bold 13px sans-serif';
-                ctx.fillText(eventLabels[i], tx + 6 + positions[i], y + 12);
-            }
-
-            ctx.globalAlpha = 1.0;
-
-            // Check finish
-            if (i === winner && positions[i] >= trackW && tick >= MIN_TICKS && !finished) {
+            if (i === winner && positions[i] >= maxPos && !finished) {
+                done = true;
                 finished = true;
             }
         });
 
-        if (finished || tick >= 300) {
+        if (done) {
             clearInterval(interval);
             horseRaceActive = false;
-            const cb = document.getElementById("horse-cheer-btn");
-            if (cb) cb.style.display = "none";
-            setTimeout(() => { horseCooldown = false; }, 3000);
+
+            lanes.forEach((lane, i) => {
+                lane.classList.add(i === winner ? 'winner' : 'loser');
+            });
 
             const resultEl = document.getElementById('horse-result');
             if (winner === selectedHorse) {
-                const payout = betAmount * HORSE_ODDS;
+                const payout = betAmount * horses[winner].odds;
                 const profit = payout - betAmount;
                 balance += payout;
                 updateBalance();
                 trackResult('horse', betAmount, payout);
                 playWinSound(profit);
                 createParticles('+$' + profit.toFixed(2), '#00e701');
-                resultEl.textContent = '🏆 ' + horses[winner].name + ' wins! +$' + profit.toFixed(2);
+                if (horses[winner].odds >= 8) createConfetti();
+                resultEl.textContent = '🏆 ' + horses[winner].name + ' wins! +$' + profit.toFixed(2) + ' (' + horses[winner].odds + 'x)';
                 resultEl.style.color = '#00e701';
                 showToast(horses[winner].name + ' wins! +$' + profit.toFixed(2), 'success');
             } else {
                 trackResult('horse', betAmount, 0);
                 playSound('lose');
-                resultEl.textContent = '💔 ' + horses[winner].name + ' wins! Lost $' + betAmount.toFixed(2);
+                resultEl.textContent = '💔 ' + horses[winner].name + ' wins! You lost $' + betAmount.toFixed(2);
                 resultEl.style.color = '#ff4757';
                 showToast(horses[winner].name + ' won - you lost!', 'error');
             }
         }
     }, 50);
-}
-
-
-// ============================================================
-// ADMIN PANEL - Konami Code: ↑↑↓↓←→←→BA Enter
-// ============================================================
-const MANTLE_URL = 'https://mantledb.sh/v2/peakgames-lucky/broadcast';
-const MANTLE_POLL_URL = 'https://mantledb.sh/v2/peakgames-lucky/poll';
-const MANTLE_VOTES_URL = 'https://mantledb.sh/v2/peakgames-lucky/votes';
-
-(function() {
-    const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a','Enter'];
-    let idx = 0;
-    document.addEventListener('keydown', function(e) {
-        if (e.key === KONAMI[idx]) { idx++; if (idx === KONAMI.length) { idx = 0; openAdminPasswordPrompt(); } }
-        else { idx = e.key === KONAMI[0] ? 1 : 0; }
-    });
-})();
-
-function openAdminPasswordPrompt() {
-    document.getElementById('admin-password-modal').style.display = 'flex';
-    setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
-}
-
-function checkAdminPassword() {
-    const input = document.getElementById('admin-password-input');
-    if (input.value === 'm@ango') {
-        document.getElementById('admin-password-modal').style.display = 'none';
-        input.value = '';
-        document.getElementById('admin-panel-modal').style.display = 'block';
-    } else {
-        input.style.border = '1px solid #ff4757';
-        input.value = '';
-        input.placeholder = 'Wrong password!';
-        setTimeout(() => { input.style.border = '1px solid #2f4553'; input.placeholder = 'Password...'; }, 1500);
-    }
-}
-
-function closeAdminPanel() {
-    document.getElementById('admin-panel-modal').style.display = 'none';
-}
-
-function adminSwitchTab(tab) {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    document.querySelectorAll('.admin-tab-page').forEach(p => p.style.display = p.dataset.page === tab ? 'block' : 'none');
-}
-
-function adminWriteBroadcast(data) {
-    return fetch(MANTLE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-}
-
-function adminSendNotification() {
-    const msg = document.getElementById('admin-notif-text').value.trim();
-    const type = document.getElementById('admin-notif-type').value;
-    if (!msg) { showToast('Enter a message first', 'error'); return; }
-    showToast('Sending...', 'info');
-    adminWriteBroadcast({ msg, type, ts: Date.now(), refresh: false })
-        .then(r => {
-            if (r.ok) {
-                document.getElementById('admin-notif-text').value = '';
-                showToast('Sent to all users!', 'success');
-                setTimeout(() => adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }), 30000);
-            } else showToast('Failed to send', 'error');
-        }).catch(() => showToast('Network error', 'error'));
-}
-
-function adminRefreshAll() {
-    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: true })
-        .then(r => {
-            if (r.ok) {
-                showToast('All users will refresh!', 'success');
-                setTimeout(() => adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }), 10000);
-            } else showToast('Failed', 'error');
-        }).catch(() => showToast('Network error', 'error'));
-}
-
-function adminGiveMoney() {
-    var val = parseFloat(document.getElementById('admin-givemoney-val').value);
-    if (isNaN(val) || val <= 0) { showToast('Enter a valid amount', 'error'); return; }
-    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, giveMoney: val });
-    showToast('$' + val.toLocaleString() + ' sent to everyone!', 'success');
-    setTimeout(function(){ adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }); }, 15000);
-}
-
-function adminSetBalanceAll() {
-    var val = parseFloat(document.getElementById('admin-setbalance-all-val').value);
-    if (isNaN(val) || val < 0) { showToast('Enter a valid amount', 'error'); return; }
-    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, setBalance: val });
-    showToast('Balance set to $' + val.toLocaleString() + ' for everyone!', 'success');
-    setTimeout(function(){ adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }); }, 15000);
-}
-
-function adminSetBalance() {
-    const val = parseFloat(document.getElementById('admin-balance-val').value);
-    if (isNaN(val) || val < 0) { showToast('Invalid balance', 'error'); return; }
-    balance = val;
-    updateBalance();
-    showToast('Balance set to $' + val.toFixed(2), 'success');
-}
-
-function adminEffect(type) {
-    var extra = null;
-    if (type === 'bigwin') {
-        extra = document.getElementById('admin-bigwin-amount').value.trim() || '$10,000';
-        if (!extra.startsWith('$')) extra = '$' + extra;
-    }
-    adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, effect: type, extra: extra });
-    showToast('Effect sent!', 'success');
-    setTimeout(() => adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false }), 15000);
-}
-
-function runEffect(type, extra) {
-    if (type === 'confetti') {
-        for (var i = 0; i < 5; i++) (function(i){ setTimeout(function(){ createConfetti(); }, i * 400); })(i);
-    } else if (type === 'flip') {
-        document.body.style.transition = 'transform 0.5s';
-        document.body.style.transform = 'rotate(180deg)';
-        setTimeout(function(){
-            document.body.style.transition = 'transform 0.5s';
-            document.body.style.transform = 'rotate(0deg)';
-        }, 4000);
-    } else if (type === 'shake') {
-        document.body.style.animation = 'adminShake 0.1s infinite';
-        setTimeout(function(){ document.body.style.animation = ''; }, 2000);
-    } else if (type === 'snow') {
-        var container = document.createElement('div');
-        container.id = 'admin-snow';
-        container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;overflow:hidden;transition:opacity 1.5s;';
-        document.body.appendChild(container);
-        for (var j = 0; j < 60; j++) {
-            var flake = document.createElement('div');
-            flake.textContent = '❄️';
-            flake.style.cssText = 'position:absolute;font-size:' + (10+Math.random()*16) + 'px;left:' + (Math.random()*100) + '%;top:-30px;animation:adminFall ' + (3+Math.random()*4) + 's linear ' + (Math.random()*3) + 's forwards;';
-            container.appendChild(flake);
-        }
-        setTimeout(function(){ var el = document.getElementById('admin-snow'); if(el){ el.style.opacity='0'; setTimeout(function(){ el.remove(); }, 1500); } }, 8500);
-    } else if (type === 'matrix') {
-        var overlay = document.createElement('canvas');
-        overlay.id = 'admin-matrix';
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9997;pointer-events:none;opacity:0.18;transition:opacity 1.5s;';
-        overlay.width = window.innerWidth; overlay.height = window.innerHeight;
-        document.body.appendChild(overlay);
-        var ctx = overlay.getContext('2d');
-        var cols = Math.floor(overlay.width / 16);
-        var drops = [];
-        for (var k = 0; k < cols; k++) drops[k] = 1;
-        var matrixInterval = setInterval(function(){
-            ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,overlay.width,overlay.height);
-            ctx.fillStyle = '#00e701'; ctx.font = '14px monospace';
-            for (var c = 0; c < drops.length; c++) {
-                ctx.fillText(String.fromCharCode(0x30A0 + Math.random()*96), c*16, drops[c]*16);
-                if (drops[c]*16 > overlay.height && Math.random() > 0.975) drops[c] = 0;
-                drops[c]++;
-            }
-        }, 50);
-        setTimeout(function(){
-            var el = document.getElementById('admin-matrix');
-            if(el) el.style.opacity = '0';
-            setTimeout(function(){ clearInterval(matrixInterval); var el2 = document.getElementById('admin-matrix'); if(el2) el2.remove(); }, 1500);
-        }, 6500);
-    } else if (type === 'bigwin') {
-        var amount = extra || '$10,000';
-        showAdminToast('YOU just won ' + amount + '! Congrats!', 'success');
-        createConfetti();
-        createParticles('+' + amount, '#ffc800');
-    } else if (type === 'cursed') {
-        document.body.style.transition = 'filter 0.5s';
-        document.body.style.filter = 'hue-rotate(180deg) invert(0.1)';
-        showAdminToast('Something feels... off.', 'error');
-        setTimeout(function(){
-            document.body.style.transition = 'filter 1.5s';
-            document.body.style.filter = '';
-        }, 6500);
-    }
-}
-
-// Inject CSS for effects
-(function(){
-    var s = document.createElement('style');
-    s.textContent = '@keyframes adminShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}@keyframes adminParty{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}@keyframes adminFall{to{transform:translateY(110vh) rotate(360deg);opacity:0;}}';
-    document.head.appendChild(s);
-})();
-
-// Admin toast (bigger, longer)
-function showAdminToast(message, type) {
-    var container = document.getElementById('toast-container');
-    var toast = document.createElement('div');
-    toast.style.cssText = 'background:linear-gradient(135deg,#1a2c38,#3d3520);border:2px solid #ffc800;border-radius:12px;padding:16px 22px;color:#fff;font-size:16px;font-weight:700;max-width:420px;box-shadow:0 8px 32px rgba(255,200,0,0.3);cursor:pointer;margin-bottom:8px;';
-    toast.innerHTML = '<div style="color:#ffc800;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Admin Announcement</div><div>' + message + '</div>';
-    toast.onclick = function(){ toast.remove(); };
-    container.appendChild(toast);
-    setTimeout(function(){ toast.remove(); }, 10000);
-}
-
-// Poll functions
-function adminSendPoll() {
-    var q = document.getElementById('admin-poll-question').value.trim();
-    var a = document.getElementById('admin-poll-a').value.trim();
-    var b = document.getElementById('admin-poll-b').value.trim();
-    var c = document.getElementById('admin-poll-c').value.trim();
-    var d = document.getElementById('admin-poll-d').value.trim();
-    if (!q || !a || !b) { showToast('Need question + at least 2 options', 'error'); return; }
-    var options = [a, b];
-    if (c) options.push(c);
-    if (d) options.push(d);
-    var pollId = Date.now().toString();
-    var votes = {};
-    options.forEach(function(_, i){ votes[i] = 0; });
-    Promise.all([
-        fetch(MANTLE_POLL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: pollId, question: q, options: options, active: true }) }),
-        fetch(MANTLE_VOTES_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(votes) })
-    ]).then(function(){
-        showToast('Poll launched!', 'success');
-        adminWriteBroadcast({ msg: '', type: 'info', ts: Date.now(), refresh: false, poll: true });
-        document.getElementById('admin-poll-results').style.display = 'block';
-        if (window._pollInterval) clearInterval(window._pollInterval);
-        window._pollInterval = setInterval(fetchAdminPollResults, 3000);
-        fetchAdminPollResults();
-    }).catch(function(e){ showToast('Error: ' + e.message, 'error'); });
-}
-
-function adminClosePoll() {
-    fetch(MANTLE_POLL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ active: false }) });
-    adminWriteBroadcast({ msg: '', type: 'info', ts: 0, refresh: false });
-    if (window._pollInterval) clearInterval(window._pollInterval);
-    document.getElementById('admin-poll-results').style.display = 'none';
-    showToast('Poll closed', 'info');
-}
-
-function fetchAdminPollResults() {
-    fetch(MANTLE_VOTES_URL).then(function(r){ return r.json(); }).then(function(votes){
-        var total = Object.values(votes).reduce(function(a,b){ return a+b; }, 0);
-        document.getElementById('admin-poll-total').textContent = '(' + total + ' votes)';
-        fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(poll){
-            var bars = document.getElementById('admin-poll-bars');
-            if (!bars || !poll.options) return;
-            bars.innerHTML = '';
-            poll.options.forEach(function(opt, i){
-                var count = votes[i] || 0;
-                var pct = total > 0 ? Math.round((count/total)*100) : 0;
-                bars.innerHTML += '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;color:#b1bad3;font-size:12px;margin-bottom:3px;"><span>' + opt + '</span><span>' + count + ' (' + pct + '%)</span></div><div style="background:#0f212e;border-radius:4px;height:8px;"><div style="background:#a855f7;height:8px;border-radius:4px;width:' + pct + '%;transition:width 0.4s;"></div></div></div>';
-            });
-        });
-    }).catch(function(){});
-}
-
-function showPollToUser(poll) {
-    var modal = document.getElementById('poll-modal');
-    document.getElementById('poll-question').textContent = poll.question;
-    var optDiv = document.getElementById('poll-options');
-    var resultsDiv = document.getElementById('poll-voted-results');
-    optDiv.innerHTML = ''; 
-    resultsDiv.style.display = 'none'; 
-    resultsDiv.innerHTML = '';
-    // Store current poll id on the modal so dismiss knows which poll this is
-    modal.dataset.pollId = poll.id;
-    var voted = localStorage.getItem('voted-poll-' + poll.id);
-    if (voted !== null) { 
-        showPollResults(poll, parseInt(voted)); 
-        modal.style.display = 'block'; 
-        return; 
-    }
-    poll.options.forEach(function(opt, i){
-        var btn = document.createElement('button');
-        btn.textContent = opt;
-        btn.style.cssText = 'background:#1a2c3a;border:2px solid #a855f7;color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px;text-align:left;width:100%;margin-bottom:4px;';
-        btn.onclick = function(){ submitVote(poll, i); };
-        optDiv.appendChild(btn);
-    });
-    modal.style.display = 'block';
-}
-
-function submitVote(poll, choiceIndex) {
-    localStorage.setItem('voted-poll-' + poll.id, choiceIndex);
-    fetch(MANTLE_VOTES_URL).then(function(r){ return r.json(); }).then(function(votes){
-        votes[choiceIndex] = (votes[choiceIndex] || 0) + 1;
-        fetch(MANTLE_VOTES_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(votes) });
-        showPollResults(poll, choiceIndex);
-    });
-}
-
-function showPollResults(poll, myChoice) {
-    document.getElementById('poll-options').innerHTML = '';
-    fetch(MANTLE_VOTES_URL).then(function(r){ return r.json(); }).then(function(votes){
-        var total = Object.values(votes).reduce(function(a,b){ return a+b; }, 0);
-        var resultsDiv = document.getElementById('poll-voted-results');
-        resultsDiv.style.display = 'block';
-        resultsDiv.innerHTML = '<div style="color:#a855f7;font-size:12px;margin-bottom:8px;">Voted! Results:</div>';
-        poll.options.forEach(function(opt, i){
-            var count = votes[i] || 0;
-            var pct = total > 0 ? Math.round((count/total)*100) : 0;
-            var isMe = i === myChoice;
-            resultsDiv.innerHTML += '<div style="margin-bottom:6px;"><div style="display:flex;justify-content:space-between;color:' + (isMe?'#ffc800':'#b1bad3') + ';font-size:12px;margin-bottom:2px;"><span>' + (isMe?'✓ ':'') + opt + '</span><span>' + pct + '%</span></div><div style="background:#0f212e;border-radius:4px;height:6px;"><div style="background:' + (isMe?'#ffc800':'#a855f7') + ';height:6px;border-radius:4px;width:' + pct + '%;"></div></div></div>';
-        });
-    });
-}
-
-// Poll every 5 seconds for all users
-(function pollBroadcast(){
-    var lastSeen = 0;
-    fetch(MANTLE_URL).then(function(r){ return r.json(); }).then(function(data){
-        if (data && data.ts) lastSeen = data.ts;
-    }).catch(function(){});
-
-    function poll(){
-        fetch(MANTLE_URL).then(function(r){ return r.json(); }).then(function(data){
-            if (!data || !data.ts || data.ts <= lastSeen) return;
-            lastSeen = data.ts;
-            var isAdmin = document.getElementById('admin-panel-modal').style.display !== 'none';
-            if (data.refresh) {
-                if (!isAdmin) location.reload();
-            } else if (data.poll) {
-                if (!isAdmin) fetch(MANTLE_POLL_URL).then(function(r){ return r.json(); }).then(function(p){
-                    if (p.active) {
-                        var modal = document.getElementById('poll-modal');
-                        if (modal.dataset.pollId !== p.id || modal.style.display === 'none') showPollToUser(p);
-                    }
-                }).catch(function(){});
-            } else if (data.responseQ) {
-                if (!isAdmin) showResponseWidget(data);
-            } else if (data.effect) {
-                if (!isAdmin) runEffect(data.effect, data.extra);
-            } else if (data.setBalance !== undefined && data.setBalance !== null) {
-                balance = data.setBalance;
-                updateBalance();
-                showAdminToast('Your balance has been set to $' + Number(data.setBalance).toLocaleString(), 'info');
-            } else if (data.giveMoney) {
-                balance += data.giveMoney;
-                updateBalance();
-                showAdminToast('You received $' + Number(data.giveMoney).toLocaleString() + ' from the admin!', 'success');
-                createConfetti();
-            } else if (data.msg) {
-                if (!isAdmin) showAdminToast(data.msg, data.type || 'info');
-            }
-        }).catch(function(){});
-    }
-    setTimeout(poll, 3000);
-    setInterval(poll, 5000);
-})();
-
-// ============================================================
-// TOS - Show once, remembered via localStorage
-// ============================================================
-(function initTOS() {
-    if (!localStorage.getItem('tos-accepted')) {
-        var modal = document.getElementById('tos-modal');
-        modal.style.display = 'flex';
-        var checkbox = document.getElementById('tos-checkbox');
-        var btn = document.getElementById('tos-accept-btn');
-        checkbox.addEventListener('change', function() {
-            if (checkbox.checked) {
-                btn.style.background = '#ffc800';
-                btn.style.color = '#000';
-                btn.style.cursor = 'pointer';
-                btn.disabled = false;
-            } else {
-                btn.style.background = '#2f4553';
-                btn.style.color = '#888';
-                btn.style.cursor = 'not-allowed';
-                btn.disabled = true;
-            }
-        });
-    }
-})();
-
-function acceptTOS() {
-    localStorage.setItem('tos-accepted', '1');
-    document.getElementById('tos-modal').style.display = 'none';
-}
-
-
-// ============================================================
-// OPEN RESPONSE QUESTION
-// ============================================================
-var RESPONSE_BLOB = 'https://mantledb.sh/v2/peakgames-lucky/responses';
-var responseInterval = null;
-var currentResponseId = null;
-
-function adminSendResponseQ() {
-    var q = document.getElementById('admin-response-question').value.trim();
-    if (!q) { showToast('Enter a question first', 'error'); return; }
-    var qid = Date.now().toString();
-    currentResponseId = qid;
-    // Reset blob
-    fetch(RESPONSE_BLOB, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({question: q, id: qid, active: true, responses: {}})
-    }).then(function() {
-        // Broadcast to all users
-        adminWriteBroadcast({msg:'', type:'info', ts: Date.now(), refresh: false, responseQ: true});
-        showToast('Question sent to all users!', 'success');
-        document.getElementById('admin-responses-box').style.display = 'block';
-        if (responseInterval) clearInterval(responseInterval);
-        responseInterval = setInterval(fetchAdminResponses, 3000);
-        fetchAdminResponses();
-        setTimeout(function(){ adminWriteBroadcast({msg:'', type:'info', ts:0, refresh:false}); }, 30000);
-    }).catch(function(e){ showToast('Error: '+e.message, 'error'); });
-}
-
-function adminCloseResponseQ() {
-    fetch(RESPONSE_BLOB, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({active: false, responses: {}})
-    });
-    if (responseInterval) clearInterval(responseInterval);
-    document.getElementById('admin-responses-box').style.display = 'none';
-    document.getElementById('admin-responses-list').innerHTML = '';
-    showToast('Question closed', 'info');
-}
-
-function fetchAdminResponses() {
-    fetch(RESPONSE_BLOB)
-        .then(function(r){return r.json();})
-        .then(function(data){
-            if (!data || !data.responses) return;
-            var responses = data.responses;
-            var keys = Object.keys(responses);
-            document.getElementById('admin-response-count').textContent = '('+keys.length+')';
-            var list = document.getElementById('admin-responses-list');
-            list.innerHTML = '';
-            keys.forEach(function(k) {
-                var div = document.createElement('div');
-                div.style.cssText = 'background:#0f212e;border-radius:6px;padding:8px 10px;font-size:13px;color:#fff;border-left:3px solid #00b4d8;';
-                div.textContent = responses[k];
-                list.appendChild(div);
-            });
-        }).catch(function(){});
-}
-
-// Show response widget to users
-function showResponseWidget(data) {
-    fetch(RESPONSE_BLOB)
-        .then(function(r){return r.json();})
-        .then(function(d){
-            if (!d || !d.active || !d.question) return;
-            currentResponseId = d.id;
-            document.getElementById('response-question-text').textContent = d.question;
-            document.getElementById('response-input-area').style.display = 'block';
-            document.getElementById('response-sent-msg').style.display = 'none';
-            document.getElementById('response-text-input').value = '';
-            document.getElementById('response-modal').style.display = 'block';
-        }).catch(function(){});
-}
-
-function submitResponse() {
-    var text = document.getElementById('response-text-input').value.trim();
-    if (!text) return;
-    fetch(RESPONSE_BLOB)
-        .then(function(r){return r.json();})
-        .then(function(d){
-            if (!d || !d.active) return;
-            d.responses = d.responses || {};
-            d.responses[localStorage.getItem('pg-sid') || 'anon'] = text;
-            fetch(RESPONSE_BLOB, {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify(d)
-            });
-            document.getElementById('response-input-area').style.display = 'none';
-            document.getElementById('response-sent-msg').style.display = 'block';
-            setTimeout(function(){ document.getElementById('response-modal').style.display = 'none'; }, 2000);
-        }).catch(function(){});
-}
-
-
-// ===== SOLITAIRE (SKILL) =====
-let solitaireState = null;
-let solitaireActive = false;
-
-function newSolitaireDeck() {
-    const suits = ['♠', '♥', '♦', '♣'];
-    const deck = [];
-    for (const suit of suits) for (let rank = 1; rank <= 13; rank++) deck.push({ rank, suit, faceUp: false });
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    return deck;
-}
-
-function solCardKey(card) {
-    const rankNames = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
-    return (rankNames[card.rank] || card.rank) + card.suit;
-}
-
-function startSolitaire() {
-    const betAmount = parseFloat(document.getElementById('solitaire-bet').value);
-    if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
-        showToast('Invalid bet amount', 'error');
-        return;
-    }
-    if (solitaireActive) {
-        showToast('Finish your current game first', 'error');
-        return;
-    }
-
-    balance -= betAmount;
-    trackBet('solitaire', betAmount);
-    updateBalance();
-    solSfx('deal');
-
-    const deck = newSolitaireDeck();
-    const tableau = [];
-    let idx = 0;
-    for (let i = 0; i < 7; i++) {
-        tableau.push([]);
-        for (let j = 0; j <= i; j++) {
-            const card = deck[idx++];
-            card.faceUp = j === i;
-            tableau[i].push(card);
-        }
-    }
-
-    solitaireState = { stock: deck.slice(idx), waste: [], tableau, foundations: [[], [], [], []], bet: betAmount };
-    solitaireActive = true;
-    solitaireStartTime = Date.now();
-    solitaireSelected = null;
-    solitaireAnimating = false;
-
-    document.getElementById('solitaire-deal-btn').style.display = 'none';
-    document.getElementById('solitaire-new-btn').style.display = 'block';
-    document.getElementById('solitaire-result').textContent = '';
-    solSetHint('Click a face-up card to select it, then click a destination');
-    updateSolSessionStats();
-    renderSolitaire();
-}
-
-function solCanPlaceOnFoundation(card, foundation) {
-    if (foundation.length === 0) return card.rank === 1;
-    const top = foundation[foundation.length - 1];
-    return top.suit === card.suit && card.rank === top.rank + 1;
-}
-
-function solCanPlaceOnTableau(card, col) {
-    if (col.length === 0) return card.rank === 13;
-    const top = col[col.length - 1];
-    const red = (s) => s === '♥' || s === '♦';
-    return red(top.suit) !== red(card.suit) && top.rank === card.rank + 1;
-}
-
-function solMoveToFoundation(card) {
-    for (let f = 0; f < 4; f++) {
-        if (solCanPlaceOnFoundation(card, solitaireState.foundations[f])) {
-            solitaireState.foundations[f].push(card);
-            solSfx('flip');
-            return true;
-        }
-    }
-    return false;
-}
-
-function solMoveToTableau(card) {
-    for (let c = 0; c < 7; c++) {
-        if (solCanPlaceOnTableau(card, solitaireState.tableau[c])) {
-            solitaireState.tableau[c].push(card);
-            solSfx('flip');
-            return true;
-        }
-    }
-    return false;
-}
-
-function solClickStock() {
-    if (!solitaireActive || solitaireAnimating || !solitaireState) return;
-    const s = solitaireState;
-    solClearSelection();
-    if (s.stock.length === 0) {
-        // Recycle waste back into stock
-        if (s.waste.length > 0) {
-            s.stock = s.waste.slice().reverse();
-            s.waste = [];
-            solSfx('flip');
-        } else {
-            showToast('Nothing left in the stock', 'error');
-            return;
-        }
-    } else {
-        const card = s.stock.pop();
-        card.faceUp = true;
-        card.justDrawn = true;
-        s.waste.push(card);
-        solSfx('flip');
-    }
-    renderSolitaire();
-    solCheckWin();
-}
-
-function solClickWaste() {
-    if (!solitaireActive || solitaireAnimating || !solitaireState) return;
-    if (!solitaireState.waste.length) return;
-    if (!solitaireSelected) {
-        solitaireSelected = { type: 'waste' };
-        document.querySelectorAll('.sol-selected').forEach(el => el.classList.remove('sol-selected'));
-        const wEl = document.querySelector('#sol-waste .sol-card');
-        if (wEl) wEl.classList.add('sol-selected');
-        solSfx('select');
-        solSetHint('Now click a column or foundation to place it');
-    } else {
-        solClearSelection();
-    }
-}
-
-function solClickTableau(colIdx, cardIdx) {
-    if (!solitaireActive || solitaireAnimating || !solitaireState) return;
-    const s = solitaireState;
-    const col = s.tableau[colIdx];
-    if (!col || cardIdx > col.length) return;
-    const isSpace = cardIdx === col.length; // clicked empty space / an empty column
-    const card = col[cardIdx];
-
-    if (!isSpace && !card.faceUp) {
-        // If a card is already selected, treat this as a destination click
-        if (solitaireSelected) {
-            // fall through to destination logic below
-        } else if (cardIdx === col.length - 1) {
-            card.faceUp = true;
-            card.justFlipped = true;
-            solSfx('flip');
-            renderSolitaire();
-            return;
-        } else {
-            solSfx('error');
-            return;
-        }
-    }
-
-    if (!solitaireSelected) {
-        if (isSpace) { solSfx('error'); return; }
-        solSelectTableauCard(colIdx, cardIdx);
-        return;
-    }
-
-    // Clicking the same card again cancels the selection
-    if (solitaireSelected.type === 'tableau' && solitaireSelected.col === colIdx && solitaireSelected.idx === cardIdx) {
-        solClearSelection();
-        return;
-    }
-
-    // Move the waste card here
-    if (solitaireSelected.type === 'waste') {
-        const wCard = s.waste[s.waste.length - 1];
-        if (solCanPlaceOnTableau(wCard, col)) {
-            const srcEl = document.querySelector('#sol-waste .sol-card');
-            const colEl = document.querySelector(`#sol-tableau .sol-col[data-col="${colIdx}"]`);
-            const destRect = { left: colEl.getBoundingClientRect().left, top: colEl.getBoundingClientRect().top + solColStackOffset(col), width: 78, height: 112 };
-            solClearSelection();
-            solAnimateMove(srcEl, destRect, () => {
-                s.waste.pop();
-                col.push(wCard);
-                renderSolitaire();
-            });
-        } else {
-            solSfx('error');
-            solSetHint('Not a legal move — try another column');
-        }
-        return;
-    }
-
-    // Move a tableau run here
-    const sel = solitaireSelected;
-    const srcCol = s.tableau[sel.col];
-    const run = srcCol.slice(sel.idx);
-    if (solCanPlaceOnTableau(run[0], col)) {
-        const srcEl = document.querySelector(`#sol-tableau .sol-col[data-col="${sel.col}"] .sol-card[data-idx="${sel.idx}"]`);
-        const colEl = document.querySelector(`#sol-tableau .sol-col[data-col="${colIdx}"]`);
-        const destRect = { left: colEl.getBoundingClientRect().left, top: colEl.getBoundingClientRect().top + solColStackOffset(col), width: 78, height: 112 };
-        solClearSelection();
-        solAnimateMove(srcEl, destRect, () => {
-            col.push(...run);
-            srcCol.length = sel.idx;
-            solFlipTop(srcCol);
-            renderSolitaire();
-        });
-    } else {
-        solSfx('error');
-        if (card && card.faceUp) solSelectTableauCard(colIdx, cardIdx);
-    }
-}
-
-function solClickFoundation(f) {
-    if (!solitaireActive || solitaireAnimating || !solitaireState) return;
-    if (!solitaireSelected) {
-        solSetHint('Select a card first, then click a foundation');
-        return;
-    }
-
-    let card, srcEl;
-    if (solitaireSelected.type === 'waste') {
-        if (!solitaireState.waste.length) return;
-        card = solitaireState.waste[solitaireState.waste.length - 1];
-        if (!solCanPlaceOnFoundation(card, solitaireState.foundations[f])) {
-            solSfx('error');
-            solSetHint('That card cannot go to this foundation');
-            return;
-        }
-        srcEl = document.querySelector('#sol-waste .sol-card');
-        solitaireState.waste.pop();
-    } else {
-        const col = solitaireState.tableau[solitaireSelected.col];
-        const idx = solitaireSelected.idx;
-        if (idx !== col.length - 1) {
-            solSetHint('Only a column top card can move to a foundation');
-            return;
-        }
-        card = col[idx];
-        if (!solCanPlaceOnFoundation(card, solitaireState.foundations[f])) {
-            solSfx('error');
-            solSetHint('That card cannot go to this foundation');
-            return;
-        }
-        srcEl = document.querySelector(`#sol-tableau .sol-col[data-col="${solitaireSelected.col}"] .sol-card[data-idx="${idx}"]`);
-        col.pop();
-        solFlipTop(col);
-    }
-
-    solClearSelection();
-    const destEl = document.getElementById('sol-foundation-' + f);
-    solAnimateMove(srcEl, destEl.getBoundingClientRect(), () => {
-        solitaireState.foundations[f].push(card);
-        renderSolitaire();
-        solCheckWin();
-    });
-}
-
-function solFlipTop(col) {
-    if (col.length > 0 && !col[col.length - 1].faceUp) col[col.length - 1].faceUp = true;
-}
-
-let solitaireSelected = null;
-let solitaireAnimating = false;
-let solitaireStartTime = 0;
-
-function solSetHint(text) {
-    const el = document.getElementById('sol-hint');
-    if (el) el.textContent = text;
-}
-
-function solClearSelection() {
-    solitaireSelected = null;
-    document.querySelectorAll('.sol-selected').forEach(el => el.classList.remove('sol-selected'));
-    solSetHint('');
-}
-
-function solSelectTableauCard(colIdx, cardIdx) {
-    solitaireSelected = { type: 'tableau', col: colIdx, idx: cardIdx };
-    document.querySelectorAll('.sol-selected').forEach(el => el.classList.remove('sol-selected'));
-    const cardEl = document.querySelector(`#sol-tableau .sol-col[data-col="${colIdx}"] .sol-card[data-idx="${cardIdx}"]`);
-    if (cardEl) cardEl.classList.add('sol-selected');
-    solSfx('select');
-    solSetHint('Now click a destination column, foundation, or the same card to cancel');
-}
-
-function solAnimateMove(srcCardEl, destRect, cb) {
-    solitaireAnimating = true;
-    if (!animationsEnabled || !srcCardEl) {
-        solitaireAnimating = false;
-        cb();
-        return;
-    }
-    const clone = srcCardEl.cloneNode(true);
-    clone.classList.remove('sol-selected', 'sol-new');
-    clone.classList.add('sol-flying');
-    const sr = srcCardEl.getBoundingClientRect();
-    clone.style.left = sr.left + 'px';
-    clone.style.top = sr.top + 'px';
-    clone.style.width = sr.width + 'px';
-    clone.style.height = sr.height + 'px';
-    document.body.appendChild(clone);
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            clone.style.transform = `translate(${destRect.left - sr.left}px, ${destRect.top - sr.top}px) rotate(3deg)`;
-        });
-    });
-    setTimeout(() => {
-        clone.remove();
-        solitaireAnimating = false;
-        solSfx('move');
-        cb();
-    }, 300);
-}
-
-// WebAudio synth SFX for Solitaire (no audio files needed)
-let solAudioCtx = null;
-function solSfx(type) {
-    if (soundMuted) return;
-    try {
-        if (!solAudioCtx) solAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (solAudioCtx.state === 'suspended') solAudioCtx.resume();
-        const ctx = solAudioCtx;
-        const t = ctx.currentTime;
-        if (type === 'win') {
-            [523, 659, 784, 1047].forEach((f, i) => {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.connect(g); g.connect(ctx.destination);
-                o.type = 'triangle';
-                o.frequency.value = f;
-                g.gain.setValueAtTime(0.001, t + i * 0.13);
-                g.gain.exponentialRampToValueAtTime(0.14, t + i * 0.13 + 0.02);
-                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.13 + 0.42);
-                o.start(t + i * 0.13);
-                o.stop(t + i * 0.13 + 0.45);
-            });
-            return;
-        }
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        if (type === 'move') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(420, t);
-            osc.frequency.exponentialRampToValueAtTime(300, t + 0.08);
-            gain.gain.setValueAtTime(0.1, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-        } else if (type === 'flip') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(680, t);
-            osc.frequency.exponentialRampToValueAtTime(940, t + 0.06);
-            gain.gain.setValueAtTime(0.09, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-        } else if (type === 'select') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(520, t);
-            gain.gain.setValueAtTime(0.07, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
-        } else if (type === 'deal') {
-            [0, 0.09].forEach((d, i) => {
-                const o2 = ctx.createOscillator();
-                const g2 = ctx.createGain();
-                o2.connect(g2); g2.connect(ctx.destination);
-                o2.type = 'triangle';
-                o2.frequency.setValueAtTime(i === 0 ? 520 : 780, t + d);
-                g2.gain.setValueAtTime(0.001, t + d);
-                g2.gain.exponentialRampToValueAtTime(0.09, t + d + 0.015);
-                g2.gain.exponentialRampToValueAtTime(0.001, t + d + 0.12);
-                o2.start(t + d);
-                o2.stop(t + d + 0.14);
-            });
-            return;
-        } else if (type === 'error') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150, t);
-            gain.gain.setValueAtTime(0.08, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-        }
-        osc.start(t);
-        osc.stop(t + 0.25);
-    } catch (e) { /* audio unavailable */ }
-}
-
-function solitaireAutoFinish() {
-    if (!solitaireActive || !solitaireState) return;
-    let moved = true;
-    let guard = 0;
-    while (moved && guard < 200) {
-        moved = false;
-        guard++;
-        const s = solitaireState;
-        // Waste top
-        if (s.waste.length > 0) {
-            const card = s.waste[s.waste.length - 1];
-            if (solMoveToFoundation(card)) { s.waste.pop(); moved = true; continue; }
-        }
-        // Tableau top cards
-        for (let c = 0; c < 7; c++) {
-            const col = s.tableau[c];
-            if (col.length === 0) continue;
-            const card = col[col.length - 1];
-            if (card.faceUp && solMoveToFoundation(card)) { col.pop(); solFlipTop(col); moved = true; break; }
-        }
-    }
-    renderSolitaire();
-    solCheckWin();
-    if (solitaireActive) showToast('No more auto moves available', 'info');
-}
-
-function solCheckWin() {
-    if (!solitaireActive || !solitaireState) return;
-    if (solitaireState.foundations.every(f => f.length === 13)) {
-        solitaireActive = false;
-        const winAmount = solitaireState.bet * 5;
-        balance += winAmount;
-        trackResult('solitaire', solitaireState.bet, winAmount);
-        updateBalance();
-        playWinSound(winAmount);
-        solSfx('win');
-        document.getElementById('solitaire-result').textContent = `🏆 SOLVED! Won ${winAmount.toFixed(2)} (5x)`;
-        document.getElementById('solitaire-result').style.color = '#00e701';
-        showToast(`🎉 Solitaire solved! +${(winAmount - solitaireState.bet).toFixed(2)}`, 'success');
-
-        // Achievements + best time
-        achievementStats.solitaireWins++;
-        const timeSec = Math.round((Date.now() - solitaireStartTime) / 1000);
-        if (achievementStats.solitaireBestTime === 0 || timeSec < achievementStats.solitaireBestTime) {
-            achievementStats.solitaireBestTime = timeSec;
-        }
-        checkAchievement('solitaireChampion');
-        checkAchievement('solitairePro');
-        checkAchievement('solitaireSpeedrun');
-        updateSolSessionStats();
-
-        setTimeout(() => {
-            document.getElementById('solitaire-deal-btn').style.display = 'block';
-            document.getElementById('solitaire-new-btn').style.display = 'none';
-        }, 600);
-    }
-}
-
-function updateSolSessionStats() {
-    const stats = gameStats.solitaire;
-    const el = document.getElementById('sol-session');
-    if (!el || !stats) return;
-    const games = stats.wins + stats.losses;
-    const winRate = games > 0 ? Math.round((stats.wins / games) * 100) : 0;
-    el.textContent = `Session: ${stats.wins} wins / ${games} games · ${winRate}% win rate`;
-}
-
-function endSolitaire() {
-    if (!solitaireActive || !solitaireState) return;
-    solitaireActive = false;
-    solitaireSelected = null;
-    trackResult('solitaire', solitaireState.bet, 0);
-    playSound('lose');
-    document.getElementById('solitaire-result').textContent = `Game ended - Lost ${solitaireState.bet.toFixed(2)}`;
-    document.getElementById('solitaire-result').style.color = '#ff4757';
-    updateSolSessionStats();
-    document.getElementById('solitaire-deal-btn').style.display = 'block';
-    document.getElementById('solitaire-new-btn').style.display = 'none';
-}
-
-function renderSolitaire() {
-    const s = solitaireState;
-    if (!s) return;
-
-    // Stock
-    const stockEl = document.getElementById('sol-stock');
-    stockEl.innerHTML = '';
-    const stockCount = document.createElement('div');
-    stockCount.className = 'sol-stock-count';
-    stockCount.textContent = s.stock.length;
-    stockEl.appendChild(stockCount);
-    stockEl.onclick = solClickStock;
-
-    // Waste
-    const wasteEl = document.getElementById('sol-waste');
-    wasteEl.innerHTML = '';
-    if (s.waste.length > 0) {
-        const topWaste = s.waste[s.waste.length - 1];
-        const wEl = solBuildCardEl(topWaste);
-        if (topWaste.justDrawn) {
-            wEl.classList.add('sol-new');
-            topWaste.justDrawn = false;
-        }
-        wasteEl.appendChild(wEl);
-        wasteEl.onclick = solClickWaste;
-    } else {
-        wasteEl.onclick = null;
-    }
-
-    // Foundations
-    for (let f = 0; f < 4; f++) {
-        const fEl = document.getElementById('sol-foundation-' + f);
-        fEl.innerHTML = '';
-        fEl.onclick = () => solClickFoundation(f);
-        if (s.foundations[f].length > 0) {
-            fEl.appendChild(solBuildCardEl(s.foundations[f][s.foundations[f].length - 1]));
-        } else {
-            const suits = ['♠', '♥', '♦', '♣'];
-            const ph = document.createElement('div');
-            ph.className = 'sol-foundation-empty';
-            ph.textContent = suits[f];
-            fEl.appendChild(ph);
-        }
-    }
-
-    // Tableau — face-up cards spread wider so you can read them at a glance
-    const tableauEl = document.getElementById('sol-tableau');
-    tableauEl.innerHTML = '';
-    s.tableau.forEach((col, c) => {
-        const colEl = document.createElement('div');
-        colEl.className = 'sol-col';
-        colEl.dataset.col = c;
-        let offset = 0;
-        col.forEach((card, i) => {
-            const cardEl = solBuildCardEl(card);
-            cardEl.style.top = offset + 'px';
-            cardEl.dataset.col = c;
-            cardEl.dataset.idx = i;
-            if (card.justFlipped || card.justDrawn) {
-                cardEl.classList.add('sol-new');
-                card.justFlipped = false;
-                card.justDrawn = false;
-            }
-            cardEl.onclick = (e) => {
-                e.stopPropagation();
-                solClickTableau(c, i);
-            };
-            colEl.appendChild(cardEl);
-            if (i < col.length - 1) offset += card.faceUp ? 46 : 26;
-        });
-        colEl.style.height = (offset + 118) + 'px';
-        // Clicking the empty space (or an empty column) places a selected card there
-        colEl.onclick = (e) => {
-            e.stopPropagation();
-            solClickTableau(c, col.length);
-        };
-        tableauEl.appendChild(colEl);
-    });
-}
-
-// Height of the stacked area above the last card (used for move destinations)
-function solColStackOffset(col) {
-    let offset = 0;
-    for (let i = 0; i < col.length - 1; i++) offset += col[i].faceUp ? 46 : 26;
-    return offset;
-}
-
-function solBuildCardEl(card) {
-    const el = document.createElement('div');
-    el.className = 'sol-card';
-    const red = card.suit === '♥' || card.suit === '♦';
-    if (card.faceUp) {
-        el.classList.add('face-up', red ? 'red' : 'black');
-        el.innerHTML = `<span class="sol-rank">${solCardKey(card)}</span><span class="sol-suit">${card.suit}</span>`;
-    } else {
-        el.classList.add('face-down');
-        el.textContent = '🂠';
-    }
-    return el;
-}
-
-// ===== TEXAS HOLD'EM POKER (SKILL) =====
-let holdemState = null;
-let holdemActive = false;
-const HOLDEM_BOT_EMOJIS = ['🤖', '👾', '🦾', '🤠', '👹'];
-
-function holdemNewDeck() {
-    const suits = ['♠', '♥', '♦', '♣'];
-    const deck = [];
-    for (const suit of suits) for (let r = 2; r <= 14; r++) deck.push({ rank: r, suit });
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    return deck;
-}
-
-function holdemCardLabel(card) {
-    const names = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
-    return (names[card.rank] || card.rank) + card.suit;
-}
-
-// Evaluate the best 5-card hand from 7 cards
-function holdemEvaluate(seven) {
-    const ranks = seven.map(c => c.rank);
-    const counts = {};
-    ranks.forEach(r => counts[r] = (counts[r] || 0) + 1);
-    const groups = Object.keys(counts).map(r => ({ rank: +r, n: counts[r] })).sort((a, b) => b.n - a.n || b.rank - a.rank);
-
-    // Flush detection
-    const suitCounts = {};
-    seven.forEach(c => suitCounts[c.suit] = (suitCounts[c.suit] || 0) + 1);
-    let flushSuit = null;
-    for (const s in suitCounts) if (suitCounts[s] >= 5) { flushSuit = s; break; }
-    const flushCards = flushSuit ? seven.filter(c => c.suit === flushSuit).map(c => c.rank).sort((a, b) => b - a) : [];
-
-    // Straight detection (A-2-3-4-5 wheel counts, high = 5)
-    const uniq = [...new Set(ranks)].sort((a, b) => b - a);
-    let straightHigh = 0;
-    if (uniq.length >= 5) {
-        for (let i = 0; i + 4 < uniq.length; i++) {
-            if (uniq[i] - uniq[i + 4] === 4) { straightHigh = uniq[i]; break; }
-        }
-        if (!straightHigh && uniq.includes(14) && uniq.includes(2) && uniq.includes(3) && uniq.includes(4) && uniq.includes(5)) straightHigh = 5;
-    }
-
-    // Straight flush detection (flush cards form a straight)
-    let straightFlushHigh = 0;
-    if (flushCards.length >= 5) {
-        const fu = [...new Set(flushCards)].sort((a, b) => b - a);
-        for (let i = 0; i + 4 < fu.length; i++) {
-            if (fu[i] - fu[i + 4] === 4) { straightFlushHigh = fu[i]; break; }
-        }
-        if (!straightFlushHigh && fu.includes(14) && fu.includes(5) && fu.includes(4) && fu.includes(3) && fu.includes(2)) straightFlushHigh = 5;
-    }
-
-    const isFlush = flushCards.length >= 5;
-    let score, name;
-    if (straightFlushHigh) { score = 8; name = 'Straight Flush'; }
-    else if (groups[0].n === 4) { score = 7; name = 'Four of a Kind'; }
-    else if (groups[0].n === 3 && groups[1] && groups[1].n === 2) { score = 6; name = 'Full House'; }
-    else if (isFlush) { score = 5; name = 'Flush'; }
-    else if (straightHigh) { score = 4; name = 'Straight'; }
-    else if (groups[0].n === 3) { score = 3; name = 'Three of a Kind'; }
-    else if (groups[0].n === 2 && groups[1] && groups[1].n === 2) { score = 2; name = 'Two Pair'; }
-    else if (groups[0].n === 2) { score = 1; name = 'Pair'; }
-    else { score = 0; name = 'High Card'; }
-
-    // Ordered kickers for tiebreaks
-    let kickers = [];
-    if (score === 4 || score === 8) kickers = [straightFlushHigh || straightHigh];
-    else if (isFlush) kickers = flushCards.slice(0, 5);
-    else if (score === 0) kickers = uniq.slice(0, 5);
-    else groups.forEach(g => { for (let i = 0; i < g.n; i++) kickers.push(g.rank); });
-
-    return { score, name, kickers, straightHigh: straightFlushHigh || straightHigh };
-}
-
-function holdemCompare(a, b) {
-    if (a.score !== b.score) return a.score - b.score;
-    if ((a.score === 4 || a.score === 8) && a.straightHigh !== b.straightHigh) return a.straightHigh - b.straightHigh;
-    for (let i = 0; i < Math.min(a.kickers.length, b.kickers.length); i++) {
-        if (a.kickers[i] !== b.kickers[i]) return a.kickers[i] - b.kickers[i];
-    }
-    return 0;
-}
-
-function holdemMultiplier(bots) { return 1 + bots * 0.1; }
-
-function updateHoldemMult() {
-    const sel = document.getElementById('holdem-bots');
-    const el = document.getElementById('holdem-mult');
-    if (sel && el) {
-        const bots = parseInt(sel.value) || 1;
-        el.textContent = holdemMultiplier(bots).toFixed(1) + 'x';
-    }
-}
-
-function startHoldem() {
-    if (holdemActive) { showToast('Finish the current hand first', 'error'); return; }
-    const buyIn = parseFloat(document.getElementById('holdem-bet').value);
-    const bots = parseInt(document.getElementById('holdem-bots').value) || 1;
-    if (isNaN(buyIn) || buyIn <= 0 || buyIn > balance) { showToast('Invalid buy-in amount', 'error'); return; }
-    if (bots < 1 || bots > 5) { showToast('Pick between 1 and 5 bots', 'error'); return; }
-
-    // Buy-in model: this much goes on the table. Raises draw from it;
-    // whatever you never commit is refunded when the hand ends.
-    balance -= buyIn;
-    updateBalance();
-
-    const deck = holdemNewDeck();
-    const playerCards = [deck.pop(), deck.pop()];
-    const botHands = [];
-    for (let i = 0; i < bots; i++) botHands.push([deck.pop(), deck.pop()]);
-    const community = [deck.pop(), deck.pop(), deck.pop()];
-    const turn = deck.pop();
-    const river = deck.pop();
-
-    holdemState = { bet: buyIn, buyIn, bots, playerCards, botHands, community, turn, river, stage: 0, stake: 0, stack: buyIn, raises: 0, botsIn: botHands.map(() => true), revealed: false };
-    holdemActive = true;
-
-    document.getElementById('holdem-deal-btn').style.display = 'none';
-    document.getElementById('holdem-new-btn').style.display = 'block';
-    document.getElementById('holdem-raise-panel').style.display = 'none';
-    const resEl = document.getElementById('holdem-result');
-    resEl.textContent = '';
-    resEl.className = 'holdem-result';
-    document.getElementById('holdem-player-hand').textContent = '';
-
-    renderHoldem(0); // hole cards
-    updateHoldemStake();
-    holdemShowBetting(); // pre-flop betting round
-}
-
-function updateHoldemStake() {
-    const el = document.getElementById('holdem-stake');
-    if (el && holdemState) {
-        el.textContent = `Stake: $${holdemState.stake.toFixed(2)} · Stack left: $${holdemState.stack.toFixed(2)}`;
-    }
-}
-
-function holdemShowBetting() {
-    const row = document.getElementById('holdem-bet-row');
-    if (row) row.style.display = 'flex';
-    const hint = document.getElementById('holdem-player-hand');
-    if (hint) {
-        hint.textContent = holdemState.stage === 0 ? 'Pre-flop — Raise, Call or Fold' :
-            holdemState.stage === 1 ? 'Flop — Raise, Call or Fold' :
-            holdemState.stage === 2 ? 'Turn — Raise, Call or Fold' : 'River — Raise, Call or Fold';
-    }
-}
-
-function holdemHideBetting() {
-    const row = document.getElementById('holdem-bet-row');
-    if (row) row.style.display = 'none';
-    const panel = document.getElementById('holdem-raise-panel');
-    if (panel) panel.style.display = 'none';
-}
-
-function holdemBet(action) {
-    if (!holdemActive || !holdemState) return;
-    const s = holdemState;
-    if (action === 'fold') {
-        holdemHideBetting();
-        holdemEndHand(false, 'You folded — lost $' + s.stake.toFixed(2));
-        return;
-    }
-    if (action === 'raise') {
-        holdemOpenRaise();
-        return;
-    }
-    // call
-    holdemHideBetting();
-    holdemNextStreet();
-}
-
-// ---- Raise slider (max = all-in on your buy-in stack) ----
-function holdemOpenRaise() {
-    const s = holdemState;
-    if (!s) return;
-    if (s.stack <= 0) {
-        showToast('You are all in — no chips left to raise', 'info');
-        holdemHideBetting();
-        holdemNextStreet();
-        return;
-    }
-    document.getElementById('holdem-bet-row').style.display = 'none';
-    const slider = document.getElementById('holdem-raise-slider');
-    const minRaise = Math.max(Math.round(s.buyIn * 0.05), 1);
-    slider.min = Math.min(minRaise, s.stack);
-    slider.max = s.stack;
-    slider.value = Math.min(minRaise, s.stack);
-    document.getElementById('holdem-raise-min').textContent = '$' + Math.min(minRaise, s.stack);
-    document.getElementById('holdem-raise-max').textContent = 'ALL IN $' + s.stack;
-    holdemUpdateRaiseAmount();
-    document.getElementById('holdem-raise-panel').style.display = 'flex';
-}
-
-function holdemUpdateRaiseAmount() {
-    const s = holdemState;
-    if (!s) return;
-    const slider = document.getElementById('holdem-raise-slider');
-    const val = parseFloat(slider.value) || 0;
-    document.getElementById('holdem-raise-amount').textContent = val >= s.stack ? 'ALL IN $' + val : '$' + val;
-}
-
-function holdemConfirmRaise() {
-    if (!holdemActive || !holdemState) return;
-    const s = holdemState;
-    const val = Math.min(parseFloat(document.getElementById('holdem-raise-slider').value) || 0, s.stack);
-    if (val <= 0) { showToast('Raise must be more than $0', 'error'); return; }
-    s.stake += val;
-    s.stack -= val;
-    s.raises++;
-    document.getElementById('holdem-raise-panel').style.display = 'none';
-    updateHoldemStake();
-    playSound('shopBuy');
-    showToast('⬆️ Raised $' + val.toFixed(2) + (s.stack <= 0 ? ' — ALL IN!' : ''), 'info');
-    holdemHideBetting();
-    holdemNextStreet();
-}
-
-function holdemCancelRaise() {
-    document.getElementById('holdem-raise-panel').style.display = 'none';
-    holdemShowBetting();
-}
-
-function holdemNextStreet() {
-    if (!holdemActive || !holdemState) return;
-    const s = holdemState;
-    const next = s.stage + 1;
-    if (next > 3) {
-        holdemShowdown();
-        return;
-    }
-    s.stage = next;
-    renderHoldem(next);
-    setTimeout(() => {
-        if (!holdemActive) return;
-        // Bots act after the street: weak hands fold under pressure
-        const foldedAny = holdemBotFoldCheck();
-        const inBots = s.botsIn.filter(Boolean).length;
-        if (inBots === 0) {
-            holdemHideBetting();
-            const mult = holdemMultiplier(s.bots);
-            if (s.stake > 0) {
-                holdemEndHand(true, '🎉 Everyone folded! You win $' + (s.stake * mult).toFixed(2) + ' (' + mult.toFixed(1) + 'x)');
-            } else {
-                // Nothing was ever at risk — end cleanly with a full refund
-                holdemActive = false;
-                balance += s.stack;
-                updateBalance();
-                const resEl = document.getElementById('holdem-result');
-                resEl.textContent = 'Everyone folded, but you had nothing at stake — buy-in refunded';
-                resEl.className = 'holdem-result push';
-                holdemFinishButtons();
-            }
-            return;
-        }
-        if (foldedAny) showToast(inBots + ' bot' + (inBots > 1 ? 's' : '') + ' still in', 'info');
-        holdemShowBetting();
-    }, 600);
-}
-
-function holdemBotFoldCheck() {
-    if (!holdemState) return false;
-    const s = holdemState;
-    const board = [...s.community, s.turn, s.river].slice(0, s.stage === 1 ? 3 : s.stage === 2 ? 4 : 5);
-    let folded = false;
-    s.botHands.forEach((hand, i) => {
-        if (!s.botsIn[i]) return;
-        // Bots only fold when there's a bet against them — your raises create the pressure
-        if (s.raises === 0) return;
-        const ev = holdemEvaluate([...hand, ...board]);
-        let p;
-        if (ev.score >= 3) p = 0.04;
-        else if (ev.score === 2) p = 0.10;
-        else if (ev.score === 1) p = 0.28;
-        else p = 0.55;
-        p += s.stage * 0.06;      // later streets are scarier
-        p += s.raises * 0.10;     // your raises push them out
-        if (Math.random() < Math.min(p, 0.92)) {
-            s.botsIn[i] = false;
-            folded = true;
-        }
-    });
-    if (folded) renderHoldem(s.stage);
-    return folded;
-}
-
-function holdemEndHand(won, message) {
-    if (!holdemActive || !holdemState) return;
-    const s = holdemState;
-    holdemActive = false;
-    const resEl = document.getElementById('holdem-result');
-    resEl.textContent = message;
-    const handEl = document.getElementById('holdem-player-hand');
-    if (handEl && !message.includes('folded')) handEl.textContent = 'Your hand: ' + holdemEvaluate([...s.playerCards, ...s.community, s.turn, s.river]).name;
-    // Refund everything from your buy-in that never hit the table
-    const refund = s.stack;
-    balance += refund;
-    trackBet('holdem', s.stake);
-    if (won) {
-        const winAmount = s.stake * holdemMultiplier(s.bots);
-        balance += winAmount;
-        trackResult('holdem', s.stake, winAmount);
-        updateBalance();
-        playWinSound(winAmount);
-        achievementStats.pokerWins++;
-        checkAchievement('pokerChampion');
-        resEl.className = 'holdem-result win';
-        createParticles('+$' + (winAmount - s.stake).toFixed(2), '#00e701');
-        if (winAmount >= 100) createConfetti();
-        showToast('🎉 +$' + (winAmount - s.stake).toFixed(2) + (refund > 0 ? ' (+$' + refund.toFixed(2) + ' refunded)' : ''), 'success');
-    } else {
-        trackResult('holdem', s.stake, 0);
-        updateBalance();
-        playSound('lose');
-        resEl.className = 'holdem-result lose';
-        createParticles('-$' + s.stake.toFixed(2), '#ff4757');
-        if (refund > 0) showToast('$' + refund.toFixed(2) + ' refunded from your buy-in', 'info');
-    }
-    holdemFinishButtons();
-}
-
-function holdemCardEl(card, delay) {
-    const el = document.createElement('div');
-    el.className = 'holdem-card deal';
-    el.style.animationDelay = delay + 's';
-    const red = card.suit === '♥' || card.suit === '♦';
-    el.classList.add(red ? 'red' : 'black');
-    const names = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
-    el.innerHTML = `<span class="holdem-card-rank">${names[card.rank] || card.rank}</span><span class="holdem-card-suit">${card.suit}</span>`;
-    return el;
-}
-
-// Bots row — hole cards stay face-down until showdown, then they're revealed
-function holdemRenderBots() {
-    if (!holdemState) return;
-    const s = holdemState;
-    const botsEl = document.getElementById('holdem-bots-row');
-    if (!botsEl) return;
-    botsEl.innerHTML = '';
-    const board = [...s.community, s.turn, s.river];
-    s.botHands.forEach((hand, i) => {
-        const botEl = document.createElement('div');
-        botEl.className = 'holdem-bot' + (s.botsIn && !s.botsIn[i] ? ' folded' : '');
-        let cardsHtml;
-        let statusHtml = '';
-        if (s.revealed && s.botsIn[i]) {
-            // Showdown — flip the bot's cards face-up with its hand name
-            const ev = holdemEvaluate([...hand, ...board]);
-            cardsHtml = hand.map((c, j) => holdemCardEl(c, j * 0.1).outerHTML).join('');
-            statusHtml = `<div class="holdem-bot-status">${ev.name}</div>`;
-        } else {
-            cardsHtml = `<div class="holdem-card holdem-back deal" style="animation-delay:${i * 0.12}s"></div>
-                <div class="holdem-card holdem-back deal" style="animation-delay:${(i * 0.12) + 0.09}s"></div>`;
-            statusHtml = `<div class="holdem-bot-status">${s.botsIn && !s.botsIn[i] ? 'FOLDED' : ''}</div>`;
-        }
-        botEl.innerHTML = `<div class="holdem-bot-avatar">${HOLDEM_BOT_EMOJIS[i]}</div>
-            <div class="holdem-bot-name">Bot ${i + 1}</div>
-            <div class="holdem-bot-cards">${cardsHtml}</div>
-            ${statusHtml}`;
-        botsEl.appendChild(botEl);
-    });
-}
-
-function renderHoldem(stage) {
-    if (!holdemState) return;
-    holdemState.stage = stage;
-    const s = holdemState;
-    holdemRenderBots();
-
-    // Community row
-    const communityEl = document.getElementById('holdem-community');
-    communityEl.innerHTML = '';
-    const total = stage >= 3 ? 5 : stage === 2 ? 4 : stage === 1 ? 3 : 0;
-    for (let i = 0; i < 5; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'holdem-slot';
-        if (i < total) {
-            const card = i < 3 ? s.community[i] : i === 3 ? s.turn : s.river;
-            slot.appendChild(holdemCardEl(card, i * 0.1));
-        } else {
-            const ph = document.createElement('div');
-            ph.className = 'holdem-slot-empty';
-            ph.textContent = '🂠';
-            slot.appendChild(ph);
-        }
-        communityEl.appendChild(slot);
-    }
-
-    // Player cards
-    const playerEl = document.getElementById('holdem-player-cards');
-    playerEl.innerHTML = '';
-    s.playerCards.forEach((card, i) => playerEl.appendChild(holdemCardEl(card, i * 0.12)));
-}
-
-function holdemShowdown() {
-    if (!holdemActive || !holdemState) return;
-    holdemHideBetting();
-    const s = holdemState;
-    holdemActive = false; // lock bets immediately so showdown can't re-run
-    const board = [...s.community, s.turn, s.river];
-    const playerBest = holdemEvaluate([...s.playerCards, ...board]);
-    const inBots = s.botHands.map((h, i) => s.botsIn[i] ? holdemEvaluate([...h, ...board]) : null).filter(Boolean);
-
-    // Showdown — flip every surviving bot's cards face-up
-    s.revealed = true;
-    holdemRenderBots();
-
-    const mult = holdemMultiplier(s.bots);
-    const beatsAll = inBots.every(b => holdemCompare(playerBest, b) > 0);
-    const tiesAll = inBots.length > 0 && inBots.every(b => holdemCompare(playerBest, b) === 0);
-
-    const resultEl = document.getElementById('holdem-result');
-    const handNameEl = document.getElementById('holdem-player-hand');
-    handNameEl.textContent = 'Your hand: ' + playerBest.name;
-
-    // Mark the winner / losers with their revealed hand names
-    let bestBot = null;
-    let bestBotIdx = -1;
-    s.botHands.forEach((h, i) => {
-        if (!s.botsIn[i]) return;
-        const ev = holdemEvaluate([...h, ...board]);
-        if (!bestBot || holdemCompare(ev, bestBot) > 0) { bestBot = ev; bestBotIdx = i; }
-    });
-
-    document.querySelectorAll('.holdem-bot').forEach((b, i) => {
-        if (!s.botsIn[i]) return;
-        const statusEl = b.querySelector('.holdem-bot-status');
-        if (!statusEl) return;
-        if (beatsAll) {
-            statusEl.textContent = statusEl.textContent + ' · BEATEN';
-            b.classList.add('beaten');
-        } else if (tiesAll) {
-            statusEl.textContent = statusEl.textContent + ' · TIED';
-        } else if (i === bestBotIdx) {
-            statusEl.textContent = statusEl.textContent + ' · WINS';
-            b.classList.add('winner');
-        } else {
-            statusEl.textContent = statusEl.textContent + ' · LOST';
-        }
-    });
-
-    // Refund the part of the buy-in that never hit the table
-    const refund = s.stack;
-    balance += refund;
-    trackBet('holdem', s.stake);
-
-    if (beatsAll) {
-        const winAmount = s.stake * mult;
-        balance += winAmount;
-        trackResult('holdem', s.stake, winAmount);
-        updateBalance();
-        playWinSound(winAmount);
-        achievementStats.pokerWins++;
-        checkAchievement('pokerChampion');
-        resultEl.textContent = `🏆 You win $${winAmount.toFixed(2)} (${mult.toFixed(1)}x)`;
-        resultEl.className = 'holdem-result win';
-        showToast(`🎉 Beat ${inBots.length} bot${inBots.length > 1 ? 's' : ''}! +$${(winAmount - s.stake).toFixed(2)}${refund > 0 ? ' (+$' + refund.toFixed(2) + ' refunded)' : ''}`, 'success');
-        createParticles('+$' + (winAmount - s.stake).toFixed(2), '#00e701');
-        if (winAmount >= 100) createConfetti();
-    } else if (tiesAll) {
-        balance += s.stake; // push — stake returned
-        updateBalance();
-        resultEl.textContent = `🤝 Split pot with ${bestBot.name} — stake returned`;
-        resultEl.className = 'holdem-result push';
-        showToast('Split pot — stake returned', 'info');
-    } else {
-        trackResult('holdem', s.stake, 0);
-        updateBalance();
-        playSound('lose');
-        resultEl.textContent = `💀 Bot ${bestBotIdx + 1} wins with ${bestBot.name} — lost $${s.stake.toFixed(2)}`;
-        resultEl.className = 'holdem-result lose';
-        showToast(`Bot ${bestBotIdx + 1} took it with ${bestBot.name}${refund > 0 ? ' — $' + refund.toFixed(2) + ' refunded' : ''}`, 'error');
-        createParticles('-$' + s.stake.toFixed(2), '#ff4757');
-    }
-
-    setTimeout(() => {
-        holdemFinishButtons();
-    }, 800);
-}
-
-function holdemFinishButtons() {
-    holdemHideBetting();
-    document.getElementById('holdem-deal-btn').style.display = 'block';
-    document.getElementById('holdem-new-btn').style.display = 'none';
-    updateHoldemStake();
-}
-
-function endHoldem() {
-    if (!holdemActive || !holdemState) return;
-    holdemActive = false;
-    const s = holdemState;
-    const refund = s.stack;
-    balance += refund; // refund whatever never hit the table
-    trackBet('holdem', s.stake);
-    trackResult('holdem', s.stake, 0);
-    updateBalance();
-    playSound('lose');
-    const resEl = document.getElementById('holdem-result');
-    resEl.textContent = 'Game ended - lost ' + s.stake.toFixed(2) + (refund > 0 ? ' ($' + refund.toFixed(2) + ' refunded)' : '');
-    resEl.className = 'holdem-result lose';
-    holdemFinishButtons();
 }
